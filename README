@@ -1,0 +1,12 @@
+D:\Users\Jos\.virtualenv\djangodev\Scripts\activate.bat
+python manage.py runserver 8000
+http://127.0.0.1:8000
+
+
+python manage.py startapp main
+python manage.py startapp image_mng
+python manage.py startapp dataset_mng
+python manage.py startapp annotate
+python manage.py startapp annot_bylabel
+python manage.py startapp annot_freelabel
+python manage.py startapp annot_maskrcnn
