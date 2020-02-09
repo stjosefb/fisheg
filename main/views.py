@@ -15,7 +15,7 @@ def index(request):
     context = {
         'menu_list': [
                 {'title': 'Image Management', 'slug': 'image_mng'},
-                {'title': 'Data set Management', 'slug': 'data_set_mng'},
+                {'title': 'Dataset Management', 'slug': 'dataset_mng'},
             ],
     }
     return HttpResponse(template.render(context, request))

@@ -1,0 +1,29 @@
+<button onclick="window.location.href = '/main';">To main menu</button>
+<form action="remove_dataset" id="remove_form" method="post">
+    {% csrf_token %}
+    <input type="hidden" id="dataset" name="dataset">
+    <p>Datasets:</p>
+    {% if dataset_list %}
+        <ul>
+        {% for dataset in dataset_list %}
+            <li>
+                <a href="/dataset_mng/annot_mng?dataset={{ dataset }}">{{ dataset }}</a>
+                <!--<button onclick="removeEmptyFolder('{{ dataset }}')">Remove</button>-->
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No elements in list.</p>
+    {% endif %}
+</form>
+<form action="create_dataset" method="post">
+    {% csrf_token %}
+    <input type="text" name="new_dataset"><button type="submit">Create dataset</button>
+</form>
+<p><em>{{ message }}</em></p>
+<script>
+    /*function removeEmptyDataset(dataset) {
+        document.getElementById("dataset").value = dataset;
+        document.getElementById("remove_form").submit();
+    }*/
+</script>

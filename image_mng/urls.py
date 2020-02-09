@@ -9,4 +9,5 @@ urlpatterns = [
     path('file_mng', views.manage_file, name='manage_file'),
     path('upload_file', views.upload_file, name='upload_file'),
     path('remove_file', views.remove_file, name='remove_file'),
+    path('images', views.get_images, name='get_images'),
 ]

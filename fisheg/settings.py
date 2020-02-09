@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'dataset_mng.apps.DatasetMngConfig',
     'image_mng.apps.ImageMngConfig',
     'main.apps.MainConfig'
 ]
@@ -123,3 +124,7 @@ STATIC_URL = '/static/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+BASE_IMAGES_PATH = 'media/images'
+BASE_DATASETS_PATH = 'media/datasets'
+

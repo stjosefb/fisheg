@@ -25,6 +25,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('main/', include('main.urls')),
     path('image_mng/', include('image_mng.urls')),
+    path('dataset_mng/', include('dataset_mng.urls')),
     path('annotate/', include('annotate.urls')),
 ]
 

@@ -3,7 +3,7 @@ from django.shortcuts import render
 # Create your views here.
 
 
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import loader
 import os
 import time
@@ -124,3 +124,20 @@ def remove_file(request):
         #print("Successfully created the directory %s " % path)
     return HttpResponseRedirect('file_mng' + '?folder='+folder+'&message=' + message)
     #return HttpResponse(folder)
+
+
+def get_images(request):
+    folder = request.GET['folder']
+    filenames = [f.name for f in os.scandir(BASE_IMAGES_PATH+'/'+folder)]
+    #filenames=[]
+    files = []
+    for filename in filenames:
+        file = {
+            'name': filename,
+            'path': '/'.join([BASE_IMAGES_PATH, folder, filename]),
+        }
+        files.append(file)
+    data = {
+        'file_list': files,
+    }
+    return JsonResponse(data)
