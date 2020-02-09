@@ -1,0 +1,9 @@
+{% if menu_list %}
+    <ul>
+    {% for menu in menu_list %}
+        <li><a href="/{{ menu.slug }}">{{ menu.title }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No elements in list.</p>
+{% endif %}

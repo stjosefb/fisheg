@@ -1,0 +1,32 @@
+<button onclick="window.location.href = '/image_mng';">To folder management</button>
+<form action="remove_file" id="remove_form" method="post">
+    {% csrf_token %}
+    <input type="hidden" id="folder" name="folder" value="{{ folder }}">
+    <input type="hidden" id="file" name="file">
+    <p>Image files in folder "{{ folder }}":</p>
+    {% if file_list %}
+        <ul>
+        {% for file in file_list %}
+            <li>
+                <a href="/media/images/{{ folder }}/{{ file }}" title="{{ file }}"><img width="64" src="/media/images/{{ folder }}/{{ file }}?_={{ ts }}"></a>
+                <button onclick="removeFile('{{ file }}')">Remove</button>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No elements in list.</p>
+    {% endif %}
+</form>
+<form action="upload_file" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="folder" value="{{ folder }}">
+    <input type="file" name="new_file">
+    <button type="submit">Upload</button>
+</form>
+<p><em>{{ message }}</em></p>
+<script>
+    function removeFile(file) {
+        document.getElementById("file").value = file;
+        document.getElementById("remove_form").submit();
+    }
+</script>

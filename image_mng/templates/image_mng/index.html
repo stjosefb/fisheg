@@ -1,0 +1,29 @@
+<button onclick="window.location.href = '/main';">To main menu</button>
+<form action="remove_folder" id="remove_form" method="post">
+    {% csrf_token %}
+    <input type="hidden" id="folder" name="folder">
+    <p>Image folders:</p>
+    {% if folder_list %}
+        <ul>
+        {% for folder in folder_list %}
+            <li>
+                <a href="/image_mng/file_mng?folder={{ folder }}">{{ folder }}</a>
+                <button onclick="removeEmptyFolder('{{ folder }}')">Remove</button>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No elements in list.</p>
+    {% endif %}
+</form>
+<form action="create_folder" method="post">
+    {% csrf_token %}
+    <input type="text" name="new_folder"><button type="submit">Create folder</button>
+</form>
+<p><em>{{ message }}</em></p>
+<script>
+    function removeEmptyFolder(folder) {
+        document.getElementById("folder").value = folder;
+        document.getElementById("remove_form").submit();
+    }
+</script>
