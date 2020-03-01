@@ -3,8 +3,9 @@ from django.shortcuts import render
 # Create your views here.
 
 
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import loader
+import json
 import os
 import time
 from fisheg import settings
@@ -28,6 +29,9 @@ def create_dataset(request):
         dataset = request.POST['new_dataset']
         #print(folder)
         os.mkdir(settings.BASE_DATASETS_PATH+'/'+dataset)
+        os.mkdir('/'.join([settings.BASE_DATASETS_PATH, dataset, 'infos']))
+        os.mkdir('/'.join([settings.BASE_DATASETS_PATH, dataset, 'annotations']))
+        os.mkdir('/'.join([settings.BASE_DATASETS_PATH, dataset, 'subdatasets']))
     except OSError:
         #pass
         message = 'Failed'
@@ -57,3 +61,55 @@ def manage_annot(request):
         'message': message,
     }
     return HttpResponse(template.render(context, request))
+
+
+def add_images(request):
+    dataset = request.POST['dataset']
+    img_folder = request.POST['imgfolder']
+    images = request.POST.getlist('imgs[]')
+
+    images_dir = settings.BASE_IMAGES_PATH+'/'+img_folder
+    datasets_dir = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS])
+
+    current_dataset_ids = [int(os.path.splitext(f)[0]) for f in os.listdir(datasets_dir) if
+                           os.path.isfile(os.path.join(datasets_dir, f))]
+
+    if len(current_dataset_ids) > 0:
+        data_id = current_dataset_ids[-1] + 1
+    else:
+        data_id = 1
+    for image in images:
+        data = {
+            'image': images_dir + '/' + image
+        }
+        with open(datasets_dir+'/'+str(data_id) + '.json', 'w') as f:
+            json.dump(data, f)
+        data_id += 1
+
+    response = {
+        "success": True,
+        "message": "Images added to dataset",
+    }
+    return JsonResponse(response)
+
+
+def list_data(request):
+    dataset = request.GET['dataset']
+    datasets_dir = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS])
+    info_files = [f for f in os.listdir(datasets_dir) if
+                  os.path.isfile(os.path.join(datasets_dir, f))]
+
+    annotations = []
+    for info_file in info_files:
+        with open(datasets_dir+'/'+info_file) as json_file:
+            info_content = json.load(json_file)
+            annotations.append(info_content)
+
+    response = {
+        "success": True,
+        "message": "Data was successfully retrieved",
+        "data": {
+            "annotations": annotations
+        }
+    }
+    return JsonResponse(response)

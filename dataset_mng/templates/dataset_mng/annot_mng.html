@@ -1,18 +1,42 @@
-<button onclick="window.location.href = '/dataset_mng';">To dataset management</button>
-<br/>
+<script src="/static/js/jquery-3.4.1.min.js"></script>
+
 <div>
-    Image folder:
-    <select id="slct_img_folder" onchange="show_images()">
-    {% for img_folder in img_folder_list %}
-        <option val="{{ img_folder }}">{{ img_folder }}</option>
-    {% endfor %}
-    </select>
-    <div id="images_selection"></div>
+    <h1>Current dataset: {{dataset}}</h1>
 </div>
+
+<div>
+    <button onclick="window.location.href = '/dataset_mng';">Back to dataset management</button>
+</div>
+<hr/>
+
+<div>
+    <form action="add_images" id="formAddImage" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" value="{{dataset}}" name="dataset">
+        Add image(s) to dataset from image folder:
+        <select id="slct_img_folder" name="imgfolder" onchange="show_images()">
+        {% for img_folder in img_folder_list %}
+            <option val="{{ img_folder }}">{{ img_folder }}</option>
+        {% endfor %}
+        </select>
+        <button>Add selected images</button>
+        <div id="images_selection"></div>
+    </form>
+</div>
+<hr/>
+
+<div>
+    Images (and their corresponding annotations) in this dataset:
+    <div id="list_data"></div>
+</div>
+
+
 <script>
 function show_images() {
     slct = document.getElementById('slct_img_folder');
     folder = slct.options[slct.selectedIndex].value;
+    div_img_slct = document.getElementById("images_selection");
+    div_img_slct.innerHTML = '';
     //alert(folder);
     var ajaxRequest = new XMLHttpRequest();
     ajaxRequest.onreadystatechange = function(){
@@ -22,11 +46,11 @@ function show_images() {
                 //document.getElementById("images_selection").innerHTML = ajaxRequest.responseText;
                 response = JSON.parse(ajaxRequest.responseText);
                 console.log(response.file_list);
-                div_img_slct = document.getElementById("images_selection");
+
                 for (i=0;i<response.file_list.length;i++) {
                     var checkbox = document.createElement('input');
                     checkbox.type = "checkbox";
-                    checkbox.name = response.file_list[i].name;
+                    checkbox.name = "imgs[]";
                     checkbox.value = response.file_list[i].name;
                     checkbox.id = "img_"+response.file_list[i].name;
 
@@ -49,4 +73,58 @@ function show_images() {
     ajaxRequest.open("GET", "/image_mng/images?folder="+folder, true);
     ajaxRequest.send();
 }
+
+function datasetDisplayAllData() {
+    divListData = document.getElementById("list_data");
+    divListData.innerHTML = '';
+
+    $.ajax({
+        type: "GET",
+        url: 'list_data?dataset={{dataset}}',
+        /*data:
+        {
+            'dataset': '{{dataset}}'
+        },*/
+        success: function(response)
+        {
+            //console.log(response);
+            //console.log(response.data.annotations);
+            for (i=0;i<response.data.annotations.length;i++) {
+                //console.log(response.data.annotations[i].image)
+                var img = document.createElement('img');
+                img.src = "/"+response.data.annotations[i].image;
+                img.width = 64;
+
+                divListData.appendChild(img);
+            }
+        }
+    });
+}
+
+$( document ).ready(function() {
+    datasetDisplayAllData();
+    $("#formAddImage").submit(function(e) {
+
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+
+        if ($('input[name="imgs[]"]:checked').length == 0) {
+            alert('Pilih dulu gambarnya');
+        } else {
+            var form = $(this);
+            var url = form.attr('action');
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: form.serialize(), // serializes the form's elements.
+                success: function(data)
+                {
+                    $('input[name="imgs[]"]').prop('checked',false);
+                    //console.log(data); // show response from the php script.
+                    datasetDisplayAllData();
+                }
+            });
+        }
+    });
+});
 </script>

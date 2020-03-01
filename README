@@ -1,6 +1,7 @@
-D:\Users\Jos\.virtualenv\djangodev\Scripts\activate.bat
+anaconda prompt
 d:
 cd D:\Users\Jos\Projects\fisheg 
+D:\Users\Jos\.virtualenv\djangodev\Scripts\activate.bat
 python manage.py runserver 8000
 http://127.0.0.1:8000
 
