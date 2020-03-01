@@ -91,11 +91,29 @@ function datasetDisplayAllData() {
             //console.log(response.data.annotations);
             for (i=0;i<response.data.annotations.length;i++) {
                 //console.log(response.data.annotations[i].image)
-                var img = document.createElement('img');
-                img.src = "/"+response.data.annotations[i].image;
-                img.width = 64;
+                //var span = document.createElement('span');
+                var spanId = 'data_'+response.data.annotations[i].id;
+                var span = $('<span id="'+spanId+'" style="padding: 5px"></span>');
+                $('#list_data').append(span);
 
-                divListData.appendChild(img);
+                //var img = document.createElement('img');
+                //img.src = "/"+response.data.annotations[i].image;
+                //img.width = 64;
+                var imgsrc = "/"+response.data.annotations[i].image;
+                var img = $('<img width="64" src="'+imgsrc+'"></img>')
+                $('#data_'+response.data.annotations[i].id).append(img);
+
+                var removeBtn = $('<button>Remove</button>').click((function (s) {
+                    return function() {
+                        alert(s);
+                    }
+                }(response.data.annotations[i].id)));
+
+                //span.appendChild(img);
+                //$('#data_'+response.data.annotations[i].id).append(removeBtn);
+                $('#data_'+response.data.annotations[i].id).append(removeBtn);
+
+                //divListData.appendChild(span);
             }
         }
     });

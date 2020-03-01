@@ -103,6 +103,7 @@ def list_data(request):
     for info_file in info_files:
         with open(datasets_dir+'/'+info_file) as json_file:
             info_content = json.load(json_file)
+            info_content['id'] = int(os.path.splitext(info_file)[0])
             annotations.append(info_content)
 
     response = {
