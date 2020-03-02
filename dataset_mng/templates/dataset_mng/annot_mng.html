@@ -103,9 +103,9 @@ function datasetDisplayAllData() {
                 var img = $('<img width="64" src="'+imgsrc+'"></img>')
                 $('#data_'+response.data.annotations[i].id).append(img);
 
-                var removeBtn = $('<button>Remove</button>').click((function (s) {
+                var removeBtn = $('<button>Remove</button>').click((function (id) {
                     return function() {
-                        alert(s);
+                        removeData(id);
                     }
                 }(response.data.annotations[i].id)));
 
@@ -115,6 +115,23 @@ function datasetDisplayAllData() {
 
                 //divListData.appendChild(span);
             }
+        }
+    });
+}
+
+function removeData(id) {
+    $.ajax({
+        type: "POST",
+        url: 'remove_data',
+        data: {
+            'id': id,
+            'dataset': '{{ dataset }}',
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(data)
+        {
+            //console.log(data); // show response from the php script.
+            datasetDisplayAllData();
         }
     });
 }

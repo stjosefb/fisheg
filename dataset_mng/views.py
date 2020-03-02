@@ -102,9 +102,12 @@ def list_data(request):
     annotations = []
     for info_file in info_files:
         with open(datasets_dir+'/'+info_file) as json_file:
-            info_content = json.load(json_file)
-            info_content['id'] = int(os.path.splitext(info_file)[0])
-            annotations.append(info_content)
+            try:
+                info_content = json.load(json_file)
+                info_content['id'] = int(os.path.splitext(info_file)[0])
+                annotations.append(info_content)
+            except:
+                pass
 
     response = {
         "success": True,
@@ -112,5 +115,25 @@ def list_data(request):
         "data": {
             "annotations": annotations
         }
+    }
+    return JsonResponse(response)
+
+
+def remove_data(request):
+    id = request.POST['id']
+    dataset = request.POST['dataset']
+    datasets_dir = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS])
+
+    current_dataset_ids = [int(os.path.splitext(f)[0]) for f in os.listdir(datasets_dir) if
+                           os.path.isfile(os.path.join(datasets_dir, f))]
+    last_data_id = current_dataset_ids[-1]
+
+    os.remove(datasets_dir + '/' + id + '.json')
+    if str(last_data_id) == id:
+        open(datasets_dir + '/' + id + '.json', 'w')
+
+    response = {
+        "success": True,
+        "message": "Data was successfully removed",
     }
     return JsonResponse(response)
