@@ -93,7 +93,7 @@ function datasetDisplayAllData() {
                 //console.log(response.data.annotations[i].image)
                 //var span = document.createElement('span');
                 var spanId = 'data_'+response.data.annotations[i].id;
-                var span = $('<span id="'+spanId+'" style="padding: 5px"></span>');
+                var span = $('<div id="'+spanId+'" style="padding: 5px; float: left"></div>');
                 $('#list_data').append(span);
 
                 //var img = document.createElement('img');
@@ -109,9 +109,21 @@ function datasetDisplayAllData() {
                     }
                 }(response.data.annotations[i].id)));
 
+                var addBtn = $('<button>Annotate</button>').click((function (id) {
+                    return function() {
+                        goToAddAnnotation(id);
+                    }
+                }(response.data.annotations[i].id)));
+
+                var divRemove = $('<div id="remove'+spanId+'" style="padding: 5px"></div>');
+                divRemove.append(removeBtn);
+                var divAdd = $('<div id="add'+spanId+'" style="padding: 5px"></div>');
+                divAdd.append(addBtn);
+
                 //span.appendChild(img);
                 //$('#data_'+response.data.annotations[i].id).append(removeBtn);
-                $('#data_'+response.data.annotations[i].id).append(removeBtn);
+                $('#data_'+response.data.annotations[i].id).append(divRemove);
+                $('#data_'+response.data.annotations[i].id).append(divAdd);
 
                 //divListData.appendChild(span);
             }
@@ -120,20 +132,26 @@ function datasetDisplayAllData() {
 }
 
 function removeData(id) {
-    $.ajax({
-        type: "POST",
-        url: 'remove_data',
-        data: {
-            'id': id,
-            'dataset': '{{ dataset }}',
-            'csrfmiddlewaretoken': '{{ csrf_token }}'
-        },
-        success: function(data)
-        {
-            //console.log(data); // show response from the php script.
-            datasetDisplayAllData();
-        }
-    });
+    if (confirm('Hapus data?')) {
+        $.ajax({
+            type: "POST",
+            url: 'remove_data',
+            data: {
+                'id': id,
+                'dataset': '{{ dataset }}',
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(data)
+            {
+                //console.log(data); // show response from the php script.
+                datasetDisplayAllData();
+            }
+        });
+    }
+}
+
+function goToAddAnnotation(id) {
+    window.location = '/annotate?dataset={{dataset}}&data_id='+id;
 }
 
 $( document ).ready(function() {

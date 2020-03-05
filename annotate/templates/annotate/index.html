@@ -1,0 +1,30 @@
+<script src="/static/js/jquery-3.4.1.min.js"></script>
+
+<button onclick="window.location.href = '/dataset_mng/annot_mng?dataset={{dataset}}';">Back to dataset {{dataset}}</button>
+<form action="save" id="form_save_annot" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" value="{{data_id}}" name="data_id">
+    <input type="hidden" value="{{dataset}}" name="dataset">
+    <button>Save</button>
+</form>
+
+<script>
+$( document ).ready(function() {
+    $("#form_save_annot").submit(function(e) {
+
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+
+        var form = $(this);
+        var url = form.attr('action');
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: form.serialize(), // serializes the form's elements.
+            success: function(data)
+            {
+            }
+        });
+    });
+});
+</script>

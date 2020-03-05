@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'annotate.apps.AnnotateConfig',
     'dataset_mng.apps.DatasetMngConfig',
     'image_mng.apps.ImageMngConfig',
     'main.apps.MainConfig'
@@ -134,4 +135,5 @@ BASE_IMAGES_PATH = 'media/images'
 BASE_DATASETS_PATH = 'media/datasets'
 
 DIR_DATASETS_INFOS = 'infos'
+DIR_DATASETS_ANNOTATIONS = 'annotations'
 

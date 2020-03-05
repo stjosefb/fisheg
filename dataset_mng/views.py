@@ -7,7 +7,6 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import loader
 import json
 import os
-import time
 from fisheg import settings
 
 
