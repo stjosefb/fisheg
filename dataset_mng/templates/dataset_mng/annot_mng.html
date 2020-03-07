@@ -100,7 +100,11 @@ function datasetDisplayAllData() {
                 //img.src = "/"+response.data.annotations[i].image;
                 //img.width = 64;
                 var imgsrc = "/"+response.data.annotations[i].image;
-                var img = $('<img width="64" src="'+imgsrc+'"></img>')
+                if (response.data.annotations[i].is_annotated) {
+                    img = $('<img width="64" src="'+imgsrc+'" border="3" style="border-color: green"></img>');
+                } else {
+                    img = $('<img width="64" src="'+imgsrc+'" border="3" style="border-color: white"></img>');
+                }
                 $('#data_'+response.data.annotations[i].id).append(img);
 
                 var removeBtn = $('<button>Remove</button>').click((function (id) {
@@ -115,9 +119,9 @@ function datasetDisplayAllData() {
                     }
                 }(response.data.annotations[i].id)));
 
-                var divRemove = $('<div id="remove'+spanId+'" style="padding: 5px"></div>');
+                var divRemove = $('<div id="remove'+spanId+'" style="padding: 1px"></div>');
                 divRemove.append(removeBtn);
-                var divAdd = $('<div id="add'+spanId+'" style="padding: 5px"></div>');
+                var divAdd = $('<div id="add'+spanId+'" style="padding: 1px"></div>');
                 divAdd.append(addBtn);
 
                 //span.appendChild(img);

@@ -51,7 +51,8 @@ def manage_annot(request):
     dataset = request.GET['dataset']
     #files = [f.name for f in os.scandir(BASE_IMAGES_PATH+'/'+folder)]
     annot_list = []
-    img_folder_list = [f.name for f in os.scandir(settings.BASE_IMAGES_PATH)]
+    img_folder_list = [f.name for f in os.scandir(settings.BASE_IMAGES_PATH) if
+                       os.path.isdir(os.path.join(settings.BASE_IMAGES_PATH, f.name))]
     #a = settings.MEDIA_ROOT
     context = {
         'annot_list': annot_list,
@@ -94,19 +95,23 @@ def add_images(request):
 
 def list_data(request):
     dataset = request.GET['dataset']
-    datasets_dir = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS])
-    info_files = [f for f in os.listdir(datasets_dir) if
-                  os.path.isfile(os.path.join(datasets_dir, f))]
+    datasets_info_dir = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS])
+    datasets_annot_dir = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS])
+    info_files = [f for f in os.listdir(datasets_info_dir) if
+                  os.path.isfile(os.path.join(datasets_info_dir, f))]
 
     annotations = []
     for info_file in info_files:
-        with open(datasets_dir+'/'+info_file) as json_file:
+        with open(datasets_info_dir+'/'+info_file) as json_file:
             try:
                 info_content = json.load(json_file)
                 info_content['id'] = int(os.path.splitext(info_file)[0])
+                info_content['is_annotated'] = os.path.exists(datasets_annot_dir+'/'+info_file)
                 annotations.append(info_content)
             except:
                 pass
+
+    annotations = sorted(annotations, key=lambda i: (int(i['id'])))
 
     response = {
         "success": True,
