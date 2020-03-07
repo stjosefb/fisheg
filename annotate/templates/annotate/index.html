@@ -1,6 +1,23 @@
 <script src="/static/js/jquery-3.4.1.min.js"></script>
 
+<h1>Data Id: {{data_id}}</h1>
+
+<div>
 <button onclick="window.location.href = '/dataset_mng/annot_mng?dataset={{dataset}}';">Back to dataset {{dataset}}</button>
+</div>
+<hr/>
+
+<div>
+    Annotation method/tool:
+    <select>
+        <option value="default" selected>Default</option>
+        <option value="bylabel" disabled>ByLabel</option>
+        <option value="freelabel" disabled>FreeLabel</option>
+        <option value="maskrcnn" disabled>Utilizing Mask R-CNN</option>
+    </select>
+</div>
+
+
 <form action="save" id="form_save_annot" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     <input type="hidden" value="{{data_id}}" name="data_id">

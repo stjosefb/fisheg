@@ -28,9 +28,9 @@ def create_dataset(request):
         dataset = request.POST['new_dataset']
         #print(folder)
         os.mkdir(settings.BASE_DATASETS_PATH+'/'+dataset)
-        os.mkdir('/'.join([settings.BASE_DATASETS_PATH, dataset, 'infos']))
-        os.mkdir('/'.join([settings.BASE_DATASETS_PATH, dataset, 'annotations']))
-        os.mkdir('/'.join([settings.BASE_DATASETS_PATH, dataset, 'subdatasets']))
+        os.mkdir('/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS]))
+        os.mkdir('/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS]))
+        os.mkdir('/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_REFDATASETS]))
     except OSError:
         #pass
         message = 'Failed'

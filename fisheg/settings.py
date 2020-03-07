@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'annotate.apps.AnnotateConfig',
     'dataset_mng.apps.DatasetMngConfig',
     'image_mng.apps.ImageMngConfig',
+    'ref_dataset_mng.apps.RefDatasetMngConfig',
     'main.apps.MainConfig'
 ]
 
@@ -136,4 +137,5 @@ BASE_DATASETS_PATH = 'media/datasets'
 
 DIR_DATASETS_INFOS = 'infos'
 DIR_DATASETS_ANNOTATIONS = 'annotations'
+DIR_DATASETS_REFDATASETS = 'refdatasets'
 

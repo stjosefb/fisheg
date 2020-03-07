@@ -13,4 +13,4 @@ python manage.py startapp annotate
 python manage.py startapp annot_bylabel
 python manage.py startapp annot_freelabel
 python manage.py startapp annot_maskrcnn
-python manage.py startapp main
+python manage.py startapp ref_dataset_mng
