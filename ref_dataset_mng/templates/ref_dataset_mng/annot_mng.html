@@ -1,0 +1,40 @@
+<script src="/static/js/jquery-3.4.1.min.js"></script>
+
+<div>
+    <h1>Referencing dataset: {{ref_dataset}}</h1>
+    <h2>Parent dataset: {{dataset}}</h2>
+</div>
+
+<div>
+    <button onclick="window.location.href = '/ref_dataset_mng?dataset={{dataset}}';">Back to list of referencing datasets</button>
+</div>
+<hr/>
+
+<div>
+    Images (and their corresponding annotations) in this (referencing) dataset:
+    <div id="list_data">
+        {% for annotation in annotations %}
+            <div id="data_{{ annotation.id }}" style="padding: 5px; float: left">
+                {% if annotation.is_annotated %}
+                    <img width="64" src="/{{annotation.image}}" border="3" style="border-color: green"></img>
+                {% else %}
+                    <img width="64" src="/{{annotation.image}}" border="3" style="border-color: white"></img>
+                {% endif %}
+                <div id="adddata_{{ annotation.id }}" style="padding: 1px">
+                    <button onclick="goToAddAnnotation({{annotation.id}})">Annotate</button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+<script>
+function goToAddAnnotation(id) {
+    //alert(id);
+    window.location = '/annotate?dataset={{dataset}}&refdataset={{ref_dataset}}&data_id='+id;
+}
+
+$( document ).ready(function() {
+});
+</script>

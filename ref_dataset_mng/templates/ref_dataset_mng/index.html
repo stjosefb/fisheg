@@ -1,10 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<h1>Manage Referencing Datasets</h1>
+<h2>Parent dataset: {{dataset}}</h2>
 
-</body>
-</html>
+<div>
+<button onclick="window.location.href = '/dataset_mng/annot_mng?dataset={{dataset}}';">Back to dataset {{dataset}}</button>
+</div>
+<hr/>
+
+<form action="remove_ref_dataset" id="remove_form" method="post">
+    {% csrf_token %}
+    <!--<input type="hidden" id="dataset" name="dataset" value="{{dataset}}">-->
+    <p>Referencing datasets:</p>
+    {% if ref_dataset_list %}
+        <ul>
+        {% for ref_dataset in ref_dataset_list %}
+            <li>
+                <a href="/ref_dataset_mng/annot_mng?dataset={{ dataset }}&refdataset={{ ref_dataset }}">{{ ref_dataset }}</a>
+                <!--<button onclick="removeEmptyFolder('{{ dataset }}')">Remove</button>-->
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No elements in list.</p>
+    {% endif %}
+</form>
+<form action="create_ref_dataset" method="post">
+    {% csrf_token %}
+    <input type="hidden" id="dataset" name="dataset" value="{{dataset}}">
+    <input type="text" name="refdataset"><button type="submit">Create referencing dataset</button>
+</form>
+<p><em>{{ message }}</em></p>

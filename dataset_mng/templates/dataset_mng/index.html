@@ -1,4 +1,10 @@
-<button onclick="window.location.href = '/main';">To main menu</button>
+<h1>Manage Datasets</h1>
+
+<div>
+<button onclick="window.location.href = '/main';">Back to main menu</button>
+</div>
+<hr/>
+
 <form action="remove_dataset" id="remove_form" method="post">
     {% csrf_token %}
     <input type="hidden" id="dataset" name="dataset">

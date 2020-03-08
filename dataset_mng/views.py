@@ -50,12 +50,12 @@ def manage_annot(request):
     template = loader.get_template('dataset_mng/annot_mng.html')
     dataset = request.GET['dataset']
     #files = [f.name for f in os.scandir(BASE_IMAGES_PATH+'/'+folder)]
-    annot_list = []
+    #annot_list = []
     img_folder_list = [f.name for f in os.scandir(settings.BASE_IMAGES_PATH) if
                        os.path.isdir(os.path.join(settings.BASE_IMAGES_PATH, f.name))]
     #a = settings.MEDIA_ROOT
     context = {
-        'annot_list': annot_list,
+        #'annot_list': annot_list,
         'img_folder_list': img_folder_list,
         'dataset': dataset,
         'message': message,

@@ -138,4 +138,6 @@ BASE_DATASETS_PATH = 'media/datasets'
 DIR_DATASETS_INFOS = 'infos'
 DIR_DATASETS_ANNOTATIONS = 'annotations'
 DIR_DATASETS_REFDATASETS = 'refdatasets'
+DIR_DELETED_DATASETS = '_datasets_deleted'
+DIR_DATASETS_DELETED_REFDATASETS = '_refdatasets_deleted'
 
