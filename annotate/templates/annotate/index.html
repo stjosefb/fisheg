@@ -1,9 +1,22 @@
 <script src="/static/js/jquery-3.4.1.min.js"></script>
 
 <h1>Data Id: {{data_id}}</h1>
+{% if is_ref_dataset %}
+<h2>Referencing dataset: {{ ref_dataset }}</h2>
+<h3>Referenced (parent) dataset: {{ dataset }}</h3>
+{% else %}
+<h2>Dataset: {{ dataset }}</h2>
+{% endif %}
+
 
 <div>
-<button onclick="window.location.href = '/dataset_mng/annot_mng?dataset={{dataset}}';">Back to dataset {{dataset}}</button>
+    {% if is_ref_dataset %}
+        <button onclick="window.location.href = '/ref_dataset_mng/annot_mng?dataset={{dataset}}&refdataset={{ref_dataset}}';">
+            Back to referencing dataset: {{ref_dataset}}
+        </button>
+    {% else %}
+        <button onclick="window.location.href = '/dataset_mng/annot_mng?dataset={{dataset}}';">Back to dataset: {{dataset}}</button>
+    {% endif %}
 </div>
 <hr/>
 
@@ -22,6 +35,9 @@
     {% csrf_token %}
     <input type="hidden" value="{{data_id}}" name="data_id">
     <input type="hidden" value="{{dataset}}" name="dataset">
+    {% if is_ref_dataset %}
+        <input type="hidden" value="{{ref_dataset}}" name="refdataset">
+    {% endif %}
     <button>Save</button>
 </form>
 
