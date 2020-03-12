@@ -14,7 +14,7 @@
         {% for dataset in dataset_list %}
             <li>
                 <a href="/dataset_mng/annot_mng?dataset={{ dataset }}">{{ dataset }}</a>
-                <!--<button onclick="removeEmptyFolder('{{ dataset }}')">Remove</button>-->
+                <button type="button" onclick="removeDataset('{{ dataset }}')">Remove</button>
             </li>
         {% endfor %}
         </ul>
@@ -28,8 +28,10 @@
 </form>
 <p><em>{{ message }}</em></p>
 <script>
-    /*function removeEmptyDataset(dataset) {
-        document.getElementById("dataset").value = dataset;
-        document.getElementById("remove_form").submit();
-    }*/
+    function removeDataset(dataset) {
+        if (confirm('Hapus dataset?')) {
+            document.getElementById("dataset").value = dataset;
+            document.getElementById("remove_form").submit();
+        }
+    }
 </script>

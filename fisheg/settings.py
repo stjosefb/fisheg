@@ -134,10 +134,10 @@ MEDIA_URL = '/media/'
 
 BASE_IMAGES_PATH = 'media/images'
 BASE_DATASETS_PATH = 'media/datasets'
+BASE_DELETED_DATASETS_PATH = 'media/_datasets_deleted'
 
 DIR_DATASETS_INFOS = 'infos'
 DIR_DATASETS_ANNOTATIONS = 'annotations'
 DIR_DATASETS_REFDATASETS = 'refdatasets'
-DIR_DELETED_DATASETS = '_datasets_deleted'
 DIR_DATASETS_DELETED_REFDATASETS = '_refdatasets_deleted'
 

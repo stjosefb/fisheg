@@ -5,7 +5,7 @@ from . import views
 urlpatterns = [
     path('', views.index, name='index'),
     path('create_dataset', views.create_dataset, name='create_dataset'),
-    #path('remove_folder', views.remove_folder, name='remove_folder'),
+    path('remove_dataset', views.remove_dataset, name='remove_dataset'),
     path('annot_mng', views.manage_annot, name='manage_annot'),
     path('add_images', views.add_images, name='add_images'),
     path('list_data', views.list_data, name='list_data'),

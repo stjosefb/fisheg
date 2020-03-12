@@ -7,8 +7,9 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import loader
 import json
 import os
+import shutil
 from fisheg import settings
-
+import time
 
 def index(request):
     message = ''
@@ -141,3 +142,20 @@ def remove_data(request):
         "message": "Data was successfully removed",
     }
     return JsonResponse(response)
+
+
+def remove_dataset(request):
+    try:
+        dataset = request.POST['dataset']
+        src = settings.BASE_DATASETS_PATH+'/'+dataset
+        dst = settings.BASE_DELETED_DATASETS_PATH+'/'+str(int(time.time()))
+        shutil.move(src, dst)
+    except OSError:
+        #pass
+        message = 'Failed'+dataset
+        #print("Creation of the directory %s failed" % path)
+    else:
+        #pass
+        message = 'Successful'+dataset
+        #print("Successfully created the directory %s " % path)
+    return HttpResponseRedirect('.'+'?message='+message)
