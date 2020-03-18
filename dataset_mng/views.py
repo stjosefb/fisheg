@@ -11,6 +11,7 @@ import shutil
 from fisheg import settings
 import time
 
+
 def index(request):
     message = ''
     if 'message' in request.GET:
@@ -152,10 +153,10 @@ def remove_dataset(request):
         shutil.move(src, dst)
     except OSError:
         #pass
-        message = 'Failed'+dataset
+        message = 'Failed'
         #print("Creation of the directory %s failed" % path)
     else:
         #pass
-        message = 'Successful'+dataset
+        message = 'Successful'
         #print("Successfully created the directory %s " % path)
     return HttpResponseRedirect('.'+'?message='+message)

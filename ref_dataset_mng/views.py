@@ -7,6 +7,8 @@ from django.template import loader
 import json
 import os
 from fisheg import settings
+import time
+import shutil
 
 
 def index(request):
@@ -94,3 +96,21 @@ def manage_annot(request):
     }
     template = loader.get_template('ref_dataset_mng/annot_mng.html')
     return HttpResponse(template.render(context, request))
+
+
+def remove_ref_dataset(request):
+    try:
+        parent_dataset = request.POST['parent_dataset']
+        ref_dataset = request.POST['ref_dataset']
+        src = '/'.join([settings.BASE_DATASETS_PATH, parent_dataset, settings.DIR_DATASETS_REFDATASETS, ref_dataset])
+        dst = '/'.join([settings.BASE_DATASETS_PATH, parent_dataset, settings.DIR_DATASETS_DELETED_REFDATASETS, str(int(time.time()))])
+        shutil.move(src, dst)
+    except OSError:
+        #pass
+        message = 'Failed '+ src + ' ' + dst
+        #print("Creation of the directory %s failed" % path)
+    else:
+        #pass
+        message = 'Successful'
+        #print("Successfully created the directory %s " % path)
+    return HttpResponseRedirect('.'+'?message='+message+'&dataset='+parent_dataset)

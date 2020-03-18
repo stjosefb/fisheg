@@ -8,14 +8,15 @@
 
 <form action="remove_ref_dataset" id="remove_form" method="post">
     {% csrf_token %}
-    <!--<input type="hidden" id="dataset" name="dataset" value="{{dataset}}">-->
+    <input type="hidden" id="parent_dataset" name="parent_dataset" value="{{dataset}}">
+    <input type="hidden" id="ref_dataset" name="ref_dataset">
     <p>Referencing datasets:</p>
     {% if ref_dataset_list %}
         <ul>
         {% for ref_dataset in ref_dataset_list %}
             <li>
                 <a href="/ref_dataset_mng/annot_mng?dataset={{ dataset }}&refdataset={{ ref_dataset }}">{{ ref_dataset }}</a>
-                <!--<button onclick="removeEmptyFolder('{{ dataset }}')">Remove</button>-->
+                <button type="button" onclick="removeRefDataset('{{ ref_dataset }}')">Remove</button>
             </li>
         {% endfor %}
         </ul>
@@ -29,3 +30,12 @@
     <input type="text" name="refdataset"><button type="submit">Create referencing dataset</button>
 </form>
 <p><em>{{ message }}</em></p>
+
+<script>
+    function removeRefDataset(refdataset) {
+        if (confirm('Hapus referencing dataset?')) {
+            document.getElementById("ref_dataset").value = refdataset;
+            document.getElementById("remove_form").submit();
+        }
+    }
+</script>
