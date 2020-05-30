@@ -1,0 +1,30 @@
+<style>
+{% include "annotate/via_style.css" %}
+</style>
+
+
+<div style="display: none">
+    {% include "annotate/via_page.html" %}
+</div>
+
+
+<div id="display_area">
+    <div id="image_panel" class="display_area_content display_none">
+        {# <img src="{{ image }}">  #}
+        {# <img src="{{ image_url }}"> #}
+        <canvas id="region_canvas" width="1" height="1" tabindex="1">Sorry, your browser does not support HTML5 Canvas functionality which is required for this application.</canvas>
+    </div>
+</div>
+
+<script>
+{% include "annotate/via_script.js" %}
+
+$( document ).ready(function() {
+    _via_init();
+    var input = { 'url': { 'value':'{{ image_url }}' }};
+    project_file_add_url_input_done(input);
+    //project_file_add_url("{{ image_url }}");
+    select_region_shape('polygon');
+    //console.log('done document ready');
+});
+</script>

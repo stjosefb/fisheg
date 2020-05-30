@@ -1,5 +1,7 @@
 <script src="/static/js/jquery-3.4.1.min.js"></script>
 
+<div style="padding: 1 0 1 10">
+
 <h1>Data Id: {{data_id}}</h1>
 {% if is_ref_dataset %}
 <h2>Referencing dataset: {{ ref_dataset }}</h2>
@@ -41,6 +43,9 @@
     <button>Save</button>
 </form>
 
+</div>
+
+{% include "annotate/default.html" %}
 <script>
 $( document ).ready(function() {
     $("#form_save_annot").submit(function(e) {

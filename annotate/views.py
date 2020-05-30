@@ -3,6 +3,7 @@ from django.shortcuts import render
 # Create your views here.
 
 from django.http import HttpResponse, JsonResponse
+from django.contrib.sites.shortcuts import get_current_site
 from django.template import loader
 from fisheg import settings
 import json
@@ -20,6 +21,15 @@ def index(request):
     dataset = request.GET['dataset']
     data_id = request.GET['data_id']
 
+    # get image
+    image_info_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS,
+                                data_id + '.json'])
+    with open(image_info_file) as f:
+        image_info = json.load(f)
+        image = image_info['image']
+        protocol = 'https' if request.is_secure() else 'http'
+        image_url = protocol + '://' + get_current_site(request).domain + '/' + image
+
     # display
     template = loader.get_template('annotate/index.html')
     # subfolders = [f.name for f in os.scandir(settings.BASE_DATASETS_PATH) if f.is_dir()]
@@ -27,6 +37,8 @@ def index(request):
         'dataset': dataset,
         'data_id': data_id,
         'is_ref_dataset': is_ref_dataset,
+        'image': image,
+        'image_url': image_url,
         # 'message': message
     }
     if is_ref_dataset:
