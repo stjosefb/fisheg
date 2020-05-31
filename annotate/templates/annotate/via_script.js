@@ -128,6 +128,8 @@ var _via_current_image_height;
 
 // a record of image statistics (e.g. width, height)
 var _via_img_stat     = {};
+//var _via_img_stat_w     = 1;
+//var _via_img_stat_h     = 1;
 var _via_is_all_img_stat_read_ongoing = false;
 var _via_img_stat_current_img_index = false;
 
@@ -1674,8 +1676,6 @@ function _via_reg_canvas_dblclick_handler(e) {
 
 // user clicks on the canvas
 function _via_reg_canvas_mousedown_handler(e) {
-
-  console.log('_via_reg_canvas_mousedown_handler');
   e.stopPropagation();
   _via_click_x0 = e.offsetX; _via_click_y0 = e.offsetY;
   _via_region_edge = is_on_region_corner(_via_click_x0, _via_click_y0);
@@ -2720,13 +2720,23 @@ function _via_polygon_del_vertex(region_id, vertex_id) {
 // Canvas update routines
 //
 function _via_redraw_reg_canvas() {
+
+//console.log('_via_redraw_reg_canvas');
   if (_via_current_image_loaded) {
+
+  //console.log('_via_redraw_reg_canvas 1');
     _via_reg_ctx.clearRect(0, 0, _via_reg_canvas.width, _via_reg_canvas.height);
     if ( _via_canvas_regions.length > 0 ) {
+    console.log('_via_redraw_reg_canvas 2');
+
       if (_via_is_region_boundary_visible) {
+
+      console.log('_via_redraw_reg_canvas 3');
         draw_all_regions();
       }
       if (_via_is_region_id_visible) {
+
+      console.log('_via_redraw_reg_canvas 4');
         draw_all_region_id();
       }
     }
@@ -9829,6 +9839,8 @@ if ( ! _via_is_debug_mode ) {
 function img_stat_set(img_index, stat) {
   if ( stat.length ) {
     _via_img_stat[img_index] = stat;
+    //_via_img_stat_w = stat[0];
+    //_via_img_stat_h = stat[1];
   } else {
     delete _via_img_stat[img_index];
   }
@@ -9943,4 +9955,95 @@ function polygon_to_bbox(pts) {
     }
   }
   return [xmin, ymin, xmax-xmin, ymax-ymin];
+}
+
+function import_annotations_from_json_2(d) {
+  return new Promise( function(ok_callback, err_callback) {
+    var region_import_count = 0;
+    var file_added_count    = 0;
+    var malformed_entries_count    = 0;
+    for (var img_id in d) {
+      if ( ! _via_img_metadata.hasOwnProperty(img_id) ) {
+        project_add_new_file(d[img_id].filename, d[img_id].size, img_id);
+        if ( _via_settings.core.default_filepath === '' ) {
+          _via_img_src[img_id] = d[img_id].filename;
+        } else {
+          _via_file_resolve_file_to_default_filepath(img_id);
+        }
+        file_added_count += 1;
+      }
+
+      // copy file attributes
+      var key;
+      for ( key in d[img_id].file_attributes ) {
+        if ( key === '' ) {
+          continue;
+        }
+
+        _via_img_metadata[img_id].file_attributes[key] = d[img_id].file_attributes[key];
+
+        // add this file attribute to _via_attributes
+        if ( ! _via_attributes['file'].hasOwnProperty(key) ) {
+          _via_attributes['file'][key] = { 'type':'text' };
+        }
+      }
+
+      // copy regions
+      var regions = d[img_id].regions;
+      var key, i;
+      for ( i in regions ) {
+
+        console.log(regions);
+        var region_i = new file_region();
+        for ( key in regions[i].shape_attributes ) {
+          region_i.shape_attributes[key] = regions[i].shape_attributes[key];
+        }
+        for ( var key in regions[i].region_attributes ) {
+          if ( key === '' ) {
+            continue;
+          }
+
+          region_i.region_attributes[key] = regions[i].region_attributes[key];
+
+          // add this region attribute to _via_attributes
+          if ( ! _via_attributes['region'].hasOwnProperty(key) ) {
+            _via_attributes['region'][key] = { 'type':'text' };
+          }
+        }
+
+        // add regions only if they are present
+        if ( Object.keys(region_i.shape_attributes).length > 0 ||
+             Object.keys(region_i.region_attributes).length > 0 ) {
+          _via_img_metadata[img_id].regions.push(region_i);
+          region_import_count += 1;
+          console.log('region push');
+        } else {
+        console.log('no region push');
+        }
+      }
+    }
+    show_message('Import Summary : [' + file_added_count + '] new files, ' +
+                 '[' + region_import_count + '] regions, ' +
+                 '[' + malformed_entries_count + '] malformed entries.');
+
+    if ( file_added_count ) {
+      update_img_fn_list();
+    }
+
+    if ( _via_current_image_loaded ) {
+      if ( region_import_count ) {
+        update_attributes_update_panel();
+        annotation_editor_update_content();
+        _via_load_canvas_regions(); // image to canvas space transform
+        _via_redraw_reg_canvas();
+        _via_reg_canvas.focus();
+      }
+    } else {
+      if ( file_added_count ) {
+        _via_show_img(0);
+      }
+    }
+
+    ok_callback([file_added_count, region_import_count, malformed_entries_count]);
+  });
 }

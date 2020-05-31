@@ -30,6 +30,16 @@ def index(request):
         protocol = 'https' if request.is_secure() else 'http'
         image_url = protocol + '://' + get_current_site(request).domain + '/' + image
 
+    # get polygon annotations
+    polygon_annot_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS,
+                                data_id + '.json'])
+    with open(polygon_annot_file) as f:
+        polygon_annot = json.load(f)
+        list_x = [str(x) for x in polygon_annot[0][::2]]
+        list_y = [str(y) for y in polygon_annot[0][1::2]]
+        str_list_x = ','.join(list_x)
+        str_list_y = ','.join(list_y)
+
     # display
     template = loader.get_template('annotate/index.html')
     # subfolders = [f.name for f in os.scandir(settings.BASE_DATASETS_PATH) if f.is_dir()]
@@ -39,6 +49,8 @@ def index(request):
         'is_ref_dataset': is_ref_dataset,
         'image': image,
         'image_url': image_url,
+        'list_x': str_list_x,
+        'list_y': str_list_y,
         # 'message': message
     }
     if is_ref_dataset:

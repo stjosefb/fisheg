@@ -18,13 +18,49 @@
 
 <script>
 {% include "annotate/via_script.js" %}
-
+</script>
+<script>
 $( document ).ready(function() {
     _via_init();
     var input = { 'url': { 'value':'{{ image_url }}' }};
-    project_file_add_url_input_done(input);
-    //project_file_add_url("{{ image_url }}");
+    //project_file_add_url_input_done(input);
     select_region_shape('polygon');
-    //console.log('done document ready');
+
+
+
+    //
+    var d = {};
+    var size = -1;
+    var filename = '{{ image_url }}';
+    var via_img_id = _via_get_image_id(filename, size);
+    //var image_idx = _via_image_id_list.indexOf(via_img_id);
+    var width = 512;
+    var height = 512;
+
+    setTimeout(continueExecution, 1000);
+    function continueExecution()
+    {
+        //var width = _via_img_stat[image_idx][0];
+        //var height = _via_img_stat[image_idx][1];
+        // [[37,189,111,136,237,380,169,413]]
+        d[via_img_id] = { 'filename':filename,
+                          'size':size,
+                          'regions':[
+                            {
+                                'shape_attributes': {
+                                    'name':'polygon', 'all_points_x':[{{ list_x }}], 'all_points_y':[{{ list_y }}]
+                                },
+                                'region_attributes': {}
+                            }
+                          ],
+                          'file_attributes':{'width':width, 'height':height},
+                        };
+        import_annotations_from_json_2(d);
+
+        console.log(_via_img_metadata);
+        console.log('done document ready');
+    }
+
+
 });
 </script>
