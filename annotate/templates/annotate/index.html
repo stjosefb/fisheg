@@ -40,6 +40,7 @@
     {% if is_ref_dataset %}
         <input type="hidden" value="{{ref_dataset}}" name="refdataset">
     {% endif %}
+    <input type="hidden" name="annot">
     <button>Save</button>
 </form>
 
@@ -55,14 +56,30 @@ $( document ).ready(function() {
         var form = $(this);
         var url = form.attr('action');
 
-        $.ajax({
-            type: "POST",
-            url: url,
-            data: form.serialize(), // serializes the form's elements.
-            success: function(data)
-            {
+        pack_via_metadata('coco').then( function(data) {
+            var hstr = data.join('');
+            var obj = JSON.parse(hstr);
+            var seg = '';
+            console.log(obj.annotations);
+            if (obj.annotations.length > 0) {
+              seg = JSON.stringify(obj.annotations[0].segmentation);
             }
-        });
+            //console.log(obj.annotations[0].segmentation);
+            //console.log(seg);
+            $('input[name="annot"]').val(seg);
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: form.serialize(), // serializes the form's elements.
+                success: function(data)
+                {
+                  console.log(data);
+                }
+            });
+        }.bind(this), function(err) {
+            //show_message('Failed to collect annotation data!');
+        }.bind(this));
     });
 });
 </script>

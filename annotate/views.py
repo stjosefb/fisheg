@@ -61,6 +61,7 @@ def index(request):
 def save(request):
     data_id = request.POST['data_id']
     dataset = request.POST['dataset']
+    annot = request.POST['annot']
     is_ref_dataset = False
     if 'refdataset' in request.POST:
         is_ref_dataset = True
@@ -72,7 +73,13 @@ def save(request):
     else:
         datasets_dir = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS])
 
-    data = [[]]
+    #print(annot)
+    if (annot != ''):
+        seg = json.loads(annot)
+        data = [seg]
+    else:
+        data = []
+
     with open(datasets_dir + '/' + str(data_id) + '.json', 'w') as f:
         json.dump(data, f)
 
