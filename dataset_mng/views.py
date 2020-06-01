@@ -75,7 +75,8 @@ def add_images(request):
 
     current_dataset_ids = [int(os.path.splitext(f)[0]) for f in os.listdir(datasets_dir) if
                            os.path.isfile(os.path.join(datasets_dir, f))]
-
+    current_dataset_ids.sort()
+    print(current_dataset_ids)
     if len(current_dataset_ids) > 0:
         data_id = current_dataset_ids[-1] + 1
     else:

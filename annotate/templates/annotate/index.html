@@ -42,12 +42,16 @@
     {% endif %}
     <input type="hidden" name="annot">
     <button>Save</button>
+    <span style='color: green; font-style: italic' id="save_msg"></span>
 </form>
 
 </div>
 
 {% include "annotate/default.html" %}
 <script>
+function hideSavedMsg() {
+    $('#save_msg').text('');
+}
 $( document ).ready(function() {
     $("#form_save_annot").submit(function(e) {
 
@@ -59,14 +63,20 @@ $( document ).ready(function() {
         pack_via_metadata('coco').then( function(data) {
             var hstr = data.join('');
             var obj = JSON.parse(hstr);
-            var seg = '';
-            console.log(obj.annotations);
-            if (obj.annotations.length > 0) {
-              seg = JSON.stringify(obj.annotations[0].segmentation);
+            var list_seg = [];
+            for (i=0; i<obj.annotations.length; i++) {
+                var seg = '';
+                //console.log(obj.annotations);
+                //if (obj.annotations.length > 0) {
+                //seg = JSON.stringify(obj.annotations[i].segmentation);
+                seg = obj.annotations[i].segmentation;
+                //}
+                list_seg.push(seg);
             }
+
             //console.log(obj.annotations[0].segmentation);
             //console.log(seg);
-            $('input[name="annot"]').val(seg);
+            $('input[name="annot"]').val(JSON.stringify(list_seg));
 
             $.ajax({
                 type: "POST",
@@ -74,7 +84,9 @@ $( document ).ready(function() {
                 data: form.serialize(), // serializes the form's elements.
                 success: function(data)
                 {
-                  console.log(data);
+                  //console.log(data);
+                  $('#save_msg').text('Saved');
+                  setTimeout(hideSavedMsg, 1000);
                 }
             });
         }.bind(this), function(err) {

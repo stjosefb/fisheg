@@ -7,6 +7,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.template import loader
 from fisheg import settings
 import json
+import os
 
 
 def index(request):
@@ -30,15 +31,22 @@ def index(request):
         protocol = 'https' if request.is_secure() else 'http'
         image_url = protocol + '://' + get_current_site(request).domain + '/' + image
 
-    # get polygon annotations
+    # get polygon segmentation annotations
+    list_seg = []
     polygon_annot_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS,
                                 data_id + '.json'])
-    with open(polygon_annot_file) as f:
-        polygon_annot = json.load(f)
-        list_x = [str(x) for x in polygon_annot[0][::2]]
-        list_y = [str(y) for y in polygon_annot[0][1::2]]
-        str_list_x = ','.join(list_x)
-        str_list_y = ','.join(list_y)
+    try:
+        with open(polygon_annot_file) as f:
+            polygon_annot = json.load(f)
+            for region in polygon_annot:
+                list_x = [str(x) for x in region[::2]]
+                list_y = [str(y) for y in region[1::2]]
+                str_list_x = ','.join(list_x)
+                str_list_y = ','.join(list_y)
+                seg = {'x': str_list_x, 'y': str_list_y}
+                list_seg.append(seg)
+    except FileNotFoundError:
+        pass
 
     # display
     template = loader.get_template('annotate/index.html')
@@ -47,10 +55,11 @@ def index(request):
         'dataset': dataset,
         'data_id': data_id,
         'is_ref_dataset': is_ref_dataset,
-        'image': image,
+        #'image': image,
         'image_url': image_url,
-        'list_x': str_list_x,
-        'list_y': str_list_y,
+        #'list_x': str_list_x,
+        #'list_y': str_list_y,
+        'list_seg': list_seg
         # 'message': message
     }
     if is_ref_dataset:
@@ -74,14 +83,15 @@ def save(request):
         datasets_dir = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS])
 
     #print(annot)
+    #data = []
     if (annot != ''):
-        seg = json.loads(annot)
-        data = [seg]
-    else:
-        data = []
-
-    with open(datasets_dir + '/' + str(data_id) + '.json', 'w') as f:
-        json.dump(data, f)
+        list_seg = json.loads(annot)
+        if len(list_seg) > 0:
+            data = list_seg
+            with open(datasets_dir + '/' + str(data_id) + '.json', 'w') as f:
+                json.dump(data, f)
+        else:
+            os.remove(datasets_dir + '/' + str(data_id) + '.json')
 
     response = {
         "success": True,

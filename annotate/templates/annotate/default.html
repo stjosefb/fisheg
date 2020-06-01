@@ -43,16 +43,22 @@ $( document ).ready(function() {
         //var width = _via_img_stat[image_idx][0];
         //var height = _via_img_stat[image_idx][1];
         // [[37,189,111,136,237,380,169,413]]
+        regions = [];
+        {% for seg in list_seg %}
+        region = {
+                'shape_attributes': {
+                    'name': 'polygon', 'all_points_x': [ {{ seg.x }} ], 'all_points_y': [ {{ seg.y }} ]
+                },
+                'region_attributes': {}
+            };
+        //region['shape_attributes']['all_points_x'] = [];
+        //region['shape_attributes']['all_points_y'] = [];
+        regions.push(region);
+        {% endfor %}
+
         d[via_img_id] = { 'filename':filename,
                           'size':size,
-                          'regions':[
-                            {
-                                'shape_attributes': {
-                                    'name':'polygon', 'all_points_x':[{{ list_x }}], 'all_points_y':[{{ list_y }}]
-                                },
-                                'region_attributes': {}
-                            }
-                          ],
+                          'regions':regions,
                           'file_attributes':{'width':width, 'height':height},
                         };
         import_annotations_from_json_2(d);
