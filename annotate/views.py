@@ -24,7 +24,9 @@ def index(request):
 
     # get image
     image_info_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS,
-                                data_id + '.json'])
+                                    data_id + '.json'])
+
+
     with open(image_info_file) as f:
         image_info = json.load(f)
         image = image_info['image']
@@ -33,7 +35,11 @@ def index(request):
 
     # get polygon segmentation annotations
     list_seg = []
-    polygon_annot_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS,
+    if is_ref_dataset:
+        polygon_annot_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_REFDATASETS,
+                                    ref_dataset, settings.DIR_DATASETS_ANNOTATIONS, data_id + '.json'])
+    else:
+        polygon_annot_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS,
                                 data_id + '.json'])
     try:
         with open(polygon_annot_file) as f:
