@@ -1,3 +1,6 @@
+===
+run
+
 anaconda prompt
 d:
 cd D:\Users\Jos\Projects\fisheg 
@@ -6,6 +9,9 @@ python manage.py runserver 8000
 http://127.0.0.1:8000
 
 
+=======
+modules
+
 python manage.py startapp main
 python manage.py startapp image_mng
 python manage.py startapp dataset_mng
@@ -13,4 +19,28 @@ python manage.py startapp annotate
 python manage.py startapp annot_bylabel
 python manage.py startapp annot_freelabel
 python manage.py startapp annot_maskrcnn
-python manage.py startapp ref_dataset_mng
+python manage.py startapp ref_dataset_mngp
+
+
+
+=======
+package
+
+(djangodev) (base) C:\Users\Jos>pip list
+Package    Version
+---------- -------
+-ip        19.0.3
+asgiref    3.2.3
+Django     3.0.3
+pip        20.0.2
+pytz       2019.3
+setuptools 40.8.0
+sqlparse   0.3.0
+
+pip install scikit-image
+pip install Shapely
+osgeo4w
+
+===
+http://142.93.169.91:8000/user/josef/notebooks/Mask_RCNN/samples/polygon_from_prediction.ipynb#
+http://download.osgeo.org/osgeo4w/osgeo4w-setup-x86_64.exe

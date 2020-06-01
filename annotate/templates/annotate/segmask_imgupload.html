@@ -1,0 +1,11 @@
+<form action="upload_segmask_file" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <input type="hidden" value="{{data_id}}" name="data_id">
+    <input type="hidden" value="{{dataset}}" name="dataset">
+    {% if is_ref_dataset %}
+        <input type="hidden" value="{{ref_dataset}}" name="refdataset">
+    {% endif %}
+    <input type="file" name="segmask_file">
+
+    <button type="submit">Upload</button>
+</form>
