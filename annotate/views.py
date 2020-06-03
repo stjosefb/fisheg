@@ -6,7 +6,7 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib.sites.shortcuts import get_current_site
 from django.template import loader
 from fisheg import settings
-from PIL import Image
+from PIL import Image, ImageDraw
 from skimage import measure
 from shapely.geometry import Polygon
 import json
@@ -108,7 +108,9 @@ def save(request):
             with open(datasets_dir + '/' + str(data_id) + '.json', 'w') as f:
                 json.dump(data, f)
         else:
-            os.remove(datasets_dir + '/' + str(data_id) + '.json')
+            path = datasets_dir + '/' + str(data_id) + '.json'
+            if os.path.exists(path):
+                os.remove(datasets_dir + '/' + str(data_id) + '.json')
 
     response = {
         "success": True,
@@ -161,3 +163,83 @@ def create_segmentations(mask):
         segmentations.append(segmentation)
 
     return segmentations
+
+
+def check_score(request):
+    data_id = request.POST['data_id']
+    dataset = request.POST['dataset']
+    annot = request.POST['annot']
+    annot_check = json.loads(annot)
+
+    annot_src = ''
+    polygon_annot_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS,
+                                   data_id + '.json'])
+    try:
+        with open(polygon_annot_file) as f:
+            annot_src = json.load(f)
+    except FileNotFoundError:
+        pass
+
+    if annot_src != '':
+        image_info_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS,
+                                    data_id + '.json'])
+
+        with open(image_info_file) as f:
+            image_info = json.load(f)
+            img_file = image_info['image']
+
+        #img = Image.open(img_file)
+        #print(img.size)
+
+        score = compare_annot(img_file, annot_check, annot_src)
+        #score = 0.5
+
+        response = {
+            "success": True,
+            "message": "Scoring done",
+            "score": score,
+            "annot": annot_check,
+            "annot_src": annot_src
+        }
+    else:
+        response = {
+            "success": False,
+            "message": "Scoring cannot be done",
+            "score": -1,
+            "annot": annot_check,
+            "annot_src": annot_src
+        }
+    return JsonResponse(response)
+
+
+def compare_annot(img_file, annot, annot_src):
+    img = Image.open(img_file)
+    #print(img.size)
+    mask1 = get_img_mask(img, annot)
+    #print(mask1)
+    mask2 = get_img_mask(img, annot_src)
+    score = iou_mask(mask1, mask2)
+    #score = 0.3
+    return score
+
+
+def get_img_mask(img, annot):
+    size = img.size
+    img2 = Image.new('L', size, 'black')
+    draw = ImageDraw.Draw(img2)
+    for polygon in annot:
+        draw.polygon(polygon, fill='white')
+
+    mask = np.array(img2)
+    mask = mask.reshape(img2.width * img2.height)
+
+    return mask
+
+
+def iou_mask(mask1, mask2):
+    mask_and = np.logical_and(mask1, mask2)
+    mask_or = np.logical_or(mask1, mask2)
+    n_intersect = np.count_nonzero(mask_and)
+    n_union = np.count_nonzero(mask_or)
+    iou = n_intersect / n_union
+    return iou
