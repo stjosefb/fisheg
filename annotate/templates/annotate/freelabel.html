@@ -2,6 +2,22 @@
 {% include "annotate/via_style.css" %}
 </style>
 
+<form action="grow_refine_traces" id="form_traces" method="POST" enctype="application/x-www-form-urlencoded">
+    {% csrf_token %}
+    <input type="hidden" value="{{ image_url }}" name="img">
+    {% if is_ref_dataset %}
+        <input type="hidden" value="{{dataset}}-{{ref_dataset}}-{{data_id}}" name="ID">
+    {% else %}
+        <input type="hidden" value="{{dataset}}--{{data_id}}" name="ID">
+    {% endif %}
+
+    <input type="hidden" value="{{image_width}}" name="img_size[]">
+    <input type="hidden" value="{{image_height}}" name="img_size[]">
+    <input type="hidden" value="9" name="weight">
+    <input type="hidden" value="1" name="m">
+    {# <input type="hidden" name="trace[]"> #}
+    <button>Grow traces</button>
+</form>
 
 <div style="display: none">
     {% include "annotate/via_page.html" %}
@@ -17,7 +33,7 @@
 </div>
 
 <div id="right_area" style="float: right; width: 50%;">
-    {% include "annotate/segmask_imgupload.html" %}
+
 </div>
 
 <script>
@@ -29,8 +45,15 @@ $( document ).ready(function() {
     var input = { 'url': { 'value':'{{ image_url }}' }};
     //project_file_add_url_input_done(input);
     select_region_shape('polygon');
+    //select_region_shape('polyline');
 
+    document.getElementById('user_input_attribute_id').value = 'class';
+    add_new_attribute_from_user_input();
+    $('#attribute_type').val('radio').trigger('change');
+    $('#_via_attribute_new_option_id').val('background').trigger('change');
+    $('#_via_attribute_new_option_id').val('fish').trigger('change');
 
+    $("#_via_attribute_option_default_fish").prop("checked", true).trigger("change");
 
     //
     var d = {};
@@ -38,16 +61,20 @@ $( document ).ready(function() {
     var filename = '{{ image_url }}';
     var via_img_id = _via_get_image_id(filename, size);
     //var image_idx = _via_image_id_list.indexOf(via_img_id);
-    //var width = 512;
-    //var height = 512;
     var width = {{image_width}};
     var height = {{image_height}};
 
     setTimeout(continueExecution, 1000);
     function continueExecution()
     {
+        //var image_idx = _via_image_id_list.indexOf(via_img_id);
+        //console.log(image_idx);
+        //console.log(_via_image_id_list);
+        //console.log(_via_img_stat);
         //var width = _via_img_stat[image_idx][0];
         //var height = _via_img_stat[image_idx][1];
+        //console.log(width);
+        //console.log(height);
         // [[37,189,111,136,237,380,169,413]]
         regions = [];
         {% for seg in list_seg %}

@@ -1,3 +1,22 @@
+=========
+freelabel
+
+ubuntu app:
+
+jika perlu ssh terminal (127.0.0.1:22):
+/usr/bin/ssh-keygen -A
+vi /etc/ssh/sshd_config
+AllowUsers josef
+PasswordAuthentication yes
+service ssh start
+
+
+cd /home/josef/anntools/freelabel
+source ./bin/activate
+python manage.py runserver 0.0.0.0:9000
+http://localhost:9000/freelabel/
+^C
+deactivate
 ===
 run
 
@@ -7,7 +26,8 @@ cd D:\Users\Jos\Projects\fisheg
 D:\Users\Jos\.virtualenv\djangodev\Scripts\activate.bat
 python manage.py runserver 8000
 http://127.0.0.1:8000
-
+^C
+deactivate
 
 =======
 modules

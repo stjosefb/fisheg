@@ -20,26 +20,29 @@ def index(request, list_seg_in=None, method='GET'):
     #if 'message' in request.GET:
     #    message = request.GET['message']
     if method == 'POST':
-        input = request.POST
+        input_req = request.POST
     else:
-        input = request.GET
+        input_req = request.GET
     is_ref_dataset = False
-    if 'refdataset' in input:
+    if 'refdataset' in input_req:
         is_ref_dataset = True
-        ref_dataset = input['refdataset']
-    dataset = input['dataset']
-    data_id = input['data_id']
+        ref_dataset = input_req['refdataset']
+    dataset = input_req['dataset']
+    data_id = input_req['data_id']
+    method = input_req['method'] if 'method' in input_req else 'default'
 
     # get image
     image_info_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS,
                                     data_id + '.json'])
-
 
     with open(image_info_file) as f:
         image_info = json.load(f)
         image = image_info['image']
         protocol = 'https' if request.is_secure() else 'http'
         image_url = protocol + '://' + get_current_site(request).domain + '/' + image
+        img = Image.open(image)
+        image_width = img.size[0]
+        image_height = img.size[1]
 
     # get polygon segmentation annotations
     if list_seg_in is None:
@@ -74,9 +77,12 @@ def index(request, list_seg_in=None, method='GET'):
         'is_ref_dataset': is_ref_dataset,
         #'image': image,
         'image_url': image_url,
+        'image_width': image_width,
+        'image_height': image_height,
         #'list_x': str_list_x,
         #'list_y': str_list_y,
-        'list_seg': list_seg
+        'list_seg': list_seg,
+        'method': method
         # 'message': message
     }
     if is_ref_dataset:

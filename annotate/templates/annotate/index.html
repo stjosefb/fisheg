@@ -24,11 +24,11 @@
 
     <div>
         Annotation method/tool:
-        <select>
-            <option value="default" selected>Default (VIA)</option>
-            <option value="bylabel" disabled>ByLabel</option>
-            <option value="freelabel" disabled>FreeLabel</option>
-            <option value="maskrcnn" disabled>Utilizing Mask R-CNN</option>
+        <select id="annotMethod" onchange="changeMethod()">
+            <option value="default">Default (VIA)</option>
+            {# <option value="bylabel" disabled>ByLabel</option> #}
+            <option value="freelabel">FreeLabel</option>
+            {# <option value="maskrcnn" disabled>Utilizing Mask R-CNN</option> #}
         </select>
     </div>
 
@@ -62,89 +62,34 @@
     </div>
 </div>
 
+
+{% if method == 'default' %}
 {% include "annotate/default.html" %}
+{% elif method == 'freelabel' %}
+{% include "annotate/freelabel.html" %}
+{% endif %}
+
 
 <script>
-function hideSavedMsg() {
-    $('#save_msg').text('');
+function changeMethod() {.6
+    console.log(changeMethod);
+    var method = $('#annotMethod').val();
+    {% if is_ref_dataset %}
+    window.location.href = '/annotate?dataset={{dataset}}&refdataset={{ref_dataset}}&data_id={{data_id}}&method='+method;
+    {% else %}
+    window.location.href = '/annotate?dataset={{dataset}}&data_id={{data_id}}&method='+method;
+    {% endif %}
+
 }
-function hideScore() {
-    //$('#score').text('');
-}
+
 $( document ).ready(function() {
-    $("#form_save_annot").submit(function(e) {
-
-        e.preventDefault(); // avoid to execute the actual submit of the form.
-
-        var form = $(this);
-        var url = form.attr('action');
-
-        pack_via_metadata('coco').then( function(data) {
-            var hstr = data.join('');
-            var obj = JSON.parse(hstr);
-            var list_seg = [];
-            for (i=0; i<obj.annotations.length; i++) {
-                var seg = '';
-                //console.log(obj.annotations);
-                //if (obj.annotations.length > 0) {
-                //seg = JSON.stringify(obj.annotations[i].segmentation);
-                seg = obj.annotations[i].segmentation;
-                //}
-                list_seg.push(seg);
-            }
-
-            //console.log(obj.annotations[0].segmentation);
-            //console.log(seg);
-            $('input[name="annot"]').val(JSON.stringify(list_seg));
-
-            $.ajax({
-                type: "POST",
-                url: url,
-                data: form.serialize(), // serializes the form's elements.
-                success: function(data)
-                {
-                  //console.log(data);
-                  $('#save_msg').text('Saved');
-                  setTimeout(hideSavedMsg, 1000);
-                }
-            });
-        }.bind(this), function(err) {
-            //show_message('Failed to collect annotation data!');
-        }.bind(this));
-    });
-
-    $("#form_check_score").submit(function(e) {
-
-        e.preventDefault(); // avoid to execute the actual submit of the form.
-
-        var form = $(this);
-        var url = form.attr('action');
-
-        pack_via_metadata('coco').then( function(data) {
-            var hstr = data.join('');
-            var obj = JSON.parse(hstr);
-            var list_seg = [];
-            for (i=0; i<obj.annotations.length; i++) {
-                var seg = '';
-                seg = obj.annotations[i].segmentation;
-                list_seg.push(seg);
-            }
-
-            $('input[name="annot"]').val(JSON.stringify(list_seg));
-
-            $.ajax({
-                type: "POST",
-                url: url,
-                data: form.serialize(), // serializes the form's elements.
-                success: function(data)
-                {
-                  $('#score').text(data.score);
-                  setTimeout(hideScore, 1000);
-                }
-            });
-        }.bind(this), function(err) {
-            //show_message('Failed to collect annotation data!');
-        }.bind(this));
-    });
+    $("#annotMethod").val("{{ method }}");
 });
+
+{% if method == 'default' %}
+{% include "annotate/default_script.js" %}
+{% elif method == 'freelabel' %}
+{% include "annotate/freelabel_script.js" %}
+{% endif %}
+
 </script>
