@@ -49,11 +49,16 @@ $( document ).ready(function() {
 
             $.ajax({
                 type: "POST",
-                url: "http://localhost:9000/freelabel/refine/",
+                //url: "http://localhost:9000/freelabel/refine2/",
+                url: url,
                 data: form.serialize(), // serializes the form's elements.
+                //dataType: 'image/png',
                 success: function(data)
                 {
-                  //console.log(data);
+                  console.log(data);
+                  $('#img_result').attr("src",data.image_base64);
+                  $('#img_result_2').attr("src",data.image_base64_2);
+                  $('#score').text(data.score + ' ' + data.score_2 + ' ' + data.score_3);
                   //$('#save_msg').text('Saved');
                   //setTimeout(hideSavedMsg, 1000);
                 }

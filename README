@@ -29,6 +29,8 @@ http://127.0.0.1:8000
 ^C
 deactivate
 
+====
+
 =======
 modules
 
@@ -60,6 +62,8 @@ sqlparse   0.3.0
 pip install scikit-image
 pip install Shapely
 osgeo4w
+
+pip install requests
 
 ===
 http://142.93.169.91:8000/user/josef/notebooks/Mask_RCNN/samples/polygon_from_prediction.ipynb#

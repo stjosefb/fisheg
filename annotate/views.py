@@ -12,6 +12,9 @@ from shapely.geometry import Polygon
 import json
 import os
 import numpy as np
+import requests
+import base64
+from io import BytesIO
 
 
 def index(request, list_seg_in=None, method='GET'):
@@ -221,12 +224,40 @@ def check_score(request):
 def compare_annot(img_file, annot, annot_src):
     img = Image.open(img_file)
     #print(img.size)
-    mask1 = get_img_mask(img, annot)
+    mask1, _ = get_img_mask(img, annot)
     #print(mask1)
-    mask2 = get_img_mask(img, annot_src)
-    score = iou_mask(mask1, mask2)
+    mask2, _ = get_img_mask(img, annot_src)
+    score, _, _ = iou_mask(mask1, mask2)
     #score = 0.3
     return score
+
+
+def compare_annot2(img_file, annot, img_mask_file):
+    img = Image.open(img_file)
+    #print(img.size)
+    mask1, img_mask_1 = get_img_mask(img, annot)
+    #print(mask1)
+    #mask2 = get_img_mask(img, annot_src)
+    #img2 = Image.open(img_mask_file)
+    #print(img_mask_file)
+    #img_mask = Image.open(img_mask_file).convert("RGBA")
+    img_mask = Image.open(BytesIO(img_mask_file)).convert('1')
+    #img_mask = Image.open(img_mask_file)
+    mask2 = np.array(img_mask)
+    mask2 = mask2.ravel()
+    mask2 = np.invert(mask2)
+    print(mask1)
+    print(mask2)
+    score, score2, score3 = iou_mask(mask1, mask2)
+
+    #img_mask_1 = Image.fromarray(mask2d)
+    buffered = BytesIO()
+    img_mask_1.save(buffered, format="PNG")
+    im_bytes = buffered.getvalue()
+    #img_mask_file_1 = base64.b64encode(buffered.getvalue())
+
+    #score = 0.3
+    return score, im_bytes, score2, score3
 
 
 def get_img_mask(img, annot):
@@ -236,10 +267,10 @@ def get_img_mask(img, annot):
     for polygon in annot:
         draw.polygon(polygon, fill='white')
 
-    mask = np.array(img2)
-    mask = mask.reshape(img2.width * img2.height)
+    mask2d = np.array(img2)
+    mask = mask2d.reshape(img2.width * img2.height)
 
-    return mask
+    return mask, img2
 
 
 def iou_mask(mask1, mask2):
@@ -248,4 +279,75 @@ def iou_mask(mask1, mask2):
     n_intersect = np.count_nonzero(mask_and)
     n_union = np.count_nonzero(mask_or)
     iou = n_intersect / n_union
-    return iou
+    iou2 = np.count_nonzero(mask1) / n_union
+    iou3 = (2 * n_intersect) / (np.count_nonzero(mask1) + np.count_nonzero(mask2))
+    return iou, iou2, iou3
+
+
+def grow_refine_traces(request):
+    # input params
+    dataset = request.POST['dataset']
+    data_id = request.POST['data_id']
+
+    # payload
+    payload = {
+        'img': request.POST['img'],
+        'ID': request.POST['ID'],
+        'weight': request.POST['weight'],
+        'm': request.POST['m']
+    }
+    img_sizes = request.POST.getlist('img_size[]')
+    #for img_size in img_sizes:
+    payload['img_size[]'] = img_sizes
+    traces = request.POST.getlist('trace[]')
+    #for trace in traces:
+    payload['trace[]'] = traces
+
+    # request
+    url = 'http://localhost:9000/freelabel/refine2/'
+    r = requests.post(url, data=payload)
+
+    # result
+    uri = ("data:" +
+           r.headers['Content-Type'] + ";" +
+           "base64," + base64.b64encode(r.content).decode('ascii'))
+
+    # reference annotation
+    annot_src = ''
+    polygon_annot_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS,
+                                   data_id + '.json'])
+    #print(polygon_annot_file)
+    try:
+        with open(polygon_annot_file) as f:
+            annot_src = json.load(f)
+    except FileNotFoundError:
+        pass
+    #print(annot_src)
+    if annot_src != '':
+        image_info_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS,
+                                    data_id + '.json'])
+        #print(image_info_file)
+        with open(image_info_file) as f:
+            image_info = json.load(f)
+            img_file = image_info['image']
+
+
+    # score
+    #print(r.content)
+    score, img_mask_1, score2, score3 = compare_annot2(img_file, annot_src, r.content)
+
+    uri2 = ("data:" +
+           "image/png" + ";" +
+           "base64," + base64.b64encode(img_mask_1).decode('ascii'))
+
+    # response
+    response = {
+        "success": True,
+        "message": "Done",
+        "score": score,
+        "score_2": score2,
+        "score_3": score3,
+        "image_base64": uri,
+        "image_base64_2": uri2
+    }
+    return JsonResponse(response)
