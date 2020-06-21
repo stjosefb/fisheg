@@ -31,6 +31,25 @@ deactivate
 
 ====
 
+===
+{"image_0063.png403086":{"filename":"image_0063.png","size":403086,"regions":[{"shape_attributes":{"name":"polygon","all_points_x":[178,320,410,302],"all_points_y":[143,75,420,424]},"region_attributes":{"class":"fish"}},{"shape_attributes":{"name":"polygon","all_points_x":[389,494,492,467],"all_points_y":[161,223,343,376]},"region_attributes":{"class":"background"}}],"file_attributes":{}}}
+
+{info: {…}, images: Array(1), annotations: Array(2), licenses: Array(1), categories: Array(2)}{info: {…}, images: Array(1), annotations: Array(2), licenses: Array(1), categories: Array(2)}
+annotations: Array(2)
+0: {id: 0, image_id: "0", category_id: 1, segmentation: Array(6), area: 1628, …}
+1: {id: 1, image_id: "0", category_id: 2, segmentation: Array(6), area: 2322, …}
+length: 2
+__proto__: Array(0)
+categories: Array(2)
+0: {id: 1, name: "background", supercategory: "class"}
+1: {id: 2, name: "fish", supercategory: "class"}
+length: 2
+__proto__: Array(0)
+images: [{…}]
+info: {year: 2020, version: "1", description: "Exported using VGG Image Annotator (http://www.robots.ox.ac.uk/~vgg/software/via/)", contributor: "", url: "http://www.robots.ox.ac.uk/~vgg/software/via/", …}
+licenses: [{…}]
+===
+
 =======
 modules
 

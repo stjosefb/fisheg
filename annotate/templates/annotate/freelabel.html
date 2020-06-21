@@ -87,7 +87,7 @@ $( document ).ready(function() {
                 'shape_attributes': {
                     'name': 'polygon', 'all_points_x': [ {{ seg.x }} ], 'all_points_y': [ {{ seg.y }} ]
                 },
-                'region_attributes': {}
+                'region_attributes': { "class": "{{ seg.category }}" }
             };
         //region['shape_attributes']['all_points_x'] = [];
         //region['shape_attributes']['all_points_y'] = [];

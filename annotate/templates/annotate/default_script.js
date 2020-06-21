@@ -15,7 +15,15 @@ $( document ).ready(function() {
         pack_via_metadata('coco').then( function(data) {
             var hstr = data.join('');
             var obj = JSON.parse(hstr);
+            //console.log(obj);
+
+            var dict_categories = {};
+            for (i=0; i<obj.categories.length; i++) {
+                dict_categories[obj.categories[i].id] = obj.categories[i].name;
+            }
+
             var list_seg = [];
+            var list_ctg = [];
             for (i=0; i<obj.annotations.length; i++) {
                 var seg = '';
                 //console.log(obj.annotations);
@@ -24,11 +32,17 @@ $( document ).ready(function() {
                 seg = obj.annotations[i].segmentation;
                 //}
                 list_seg.push(seg);
+                if (dict_categories.hasOwnProperty(obj.annotations[i].category_id)) {
+                    list_ctg.push(dict_categories[obj.annotations[i].category_id]);
+                }
             }
 
             //console.log(obj.annotations[0].segmentation);
             //console.log(seg);
             $('input[name="annot"]').val(JSON.stringify(list_seg));
+            $('input[name="categories"]').val(JSON.stringify(list_ctg));
+
+            //$('input[name="class"]').val(JSON.stringify(list_class));
 
             $.ajax({
                 type: "POST",

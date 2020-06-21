@@ -1,5 +1,5 @@
 $( document ).ready(function() {
-
+    $("#btnScore").attr('disabled', true);
     $("#form_traces").submit(function(e) {
 
     e.preventDefault(); // avoid to execute the actual submit of the form.

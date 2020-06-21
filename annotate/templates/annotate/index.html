@@ -42,6 +42,8 @@
                     <input type="hidden" value="{{ref_dataset}}" name="refdataset">
                 {% endif %}
                 <input type="hidden" name="annot">
+                <input type="hidden" name="categories">
+                <input type="hidden" name="method" value="{{ method }}">
                 <button>Save</button>
                 <span style='color: green; font-style: italic;' id="save_msg"></span>
             </form>
@@ -52,7 +54,7 @@
                 <input type="hidden" value="{{data_id}}" name="data_id">
                 <input type="hidden" value="{{dataset}}" name="dataset">
                 <input type="hidden" name="annot">
-                <button>Score</button>
+                <button id="btnScore">Score</button>
                 <span style='color: green; font-style: italic' id="score"></span>
             </form>
         </div>
@@ -90,6 +92,7 @@ $( document ).ready(function() {
 {% include "annotate/default_script.js" %}
 {% elif method == 'freelabel' %}
 {% include "annotate/freelabel_script.js" %}
+{% include "annotate/default_script.js" %}
 {% endif %}
 
 </script>

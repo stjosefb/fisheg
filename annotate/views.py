@@ -32,7 +32,7 @@ def index(request, list_seg_in=None, method='GET'):
         ref_dataset = input_req['refdataset']
     dataset = input_req['dataset']
     data_id = input_req['data_id']
-    method = input_req['method'] if 'method' in input_req else 'default'
+    annot_method = input_req['method'] if 'method' in input_req else 'default'
 
     # get image
     image_info_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS,
@@ -58,13 +58,20 @@ def index(request, list_seg_in=None, method='GET'):
                                     data_id + '.json'])
         try:
             with open(polygon_annot_file) as f:
-                polygon_annot = json.load(f)
-                for region in polygon_annot:
+                annot = json.load(f)
+                if annot_method == 'default':
+                    polygon_annot = annot[annot_method]
+                elif annot_method == 'freelabel':
+                    polygon_annot = annot[annot_method]['shapes']
+                for key, region in enumerate(polygon_annot):
                     list_x = [str(x) for x in region[::2]]
                     list_y = [str(y) for y in region[1::2]]
                     str_list_x = ','.join(list_x)
                     str_list_y = ','.join(list_y)
-                    seg = {'x': str_list_x, 'y': str_list_y}
+                    if annot_method == 'freelabel':
+                        seg = {'x': str_list_x, 'y': str_list_y, 'category': annot[annot_method]['classes'][key]}
+                    else:
+                        seg = {'x': str_list_x, 'y': str_list_y}
                     list_seg.append(seg)
         except FileNotFoundError:
             pass
@@ -85,7 +92,7 @@ def index(request, list_seg_in=None, method='GET'):
         #'list_x': str_list_x,
         #'list_y': str_list_y,
         'list_seg': list_seg,
-        'method': method
+        'method': annot_method
         # 'message': message
     }
     if is_ref_dataset:
@@ -97,6 +104,8 @@ def save(request):
     data_id = request.POST['data_id']
     dataset = request.POST['dataset']
     annot = request.POST['annot']
+    categories = request.POST['categories']
+    annot_method = request.POST['method']
     is_ref_dataset = False
     if 'refdataset' in request.POST:
         is_ref_dataset = True
@@ -112,8 +121,17 @@ def save(request):
     #data = []
     if (annot != ''):
         list_seg = json.loads(annot)
+        list_cats = json.loads(categories)
         if len(list_seg) > 0:
-            data = list_seg
+            data = {}
+
+            if annot_method == 'default':
+                data[annot_method] = list_seg
+            elif annot_method == 'freelabel':
+                data[annot_method] = {
+                    'shapes': list_seg,
+                    'classes': list_cats
+                }
             with open(datasets_dir + '/' + str(data_id) + '.json', 'w') as f:
                 json.dump(data, f)
         else:
@@ -185,7 +203,8 @@ def check_score(request):
                                    data_id + '.json'])
     try:
         with open(polygon_annot_file) as f:
-            annot_src = json.load(f)
+            annot_obj = json.load(f)
+            annot_src = annot_obj['default']
     except FileNotFoundError:
         pass
 
@@ -319,7 +338,8 @@ def grow_refine_traces(request):
     #print(polygon_annot_file)
     try:
         with open(polygon_annot_file) as f:
-            annot_src = json.load(f)
+            annot_obj = json.load(f)
+            annot_src = annot_obj['default']
     except FileNotFoundError:
         pass
     #print(annot_src)
