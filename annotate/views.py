@@ -62,7 +62,10 @@ def index(request, list_seg_in=None, method='GET'):
                 if annot_method == 'default':
                     polygon_annot = annot[annot_method]
                 elif annot_method == 'freelabel':
-                    polygon_annot = annot[annot_method]['shapes']
+                    if annot_method in annot:
+                        polygon_annot = annot[annot_method]['shapes']
+                    else:
+                        polygon_annot = []
                 for key, region in enumerate(polygon_annot):
                     list_x = [str(x) for x in region[::2]]
                     list_y = [str(y) for y in region[1::2]]
@@ -106,6 +109,7 @@ def save(request):
     annot = request.POST['annot']
     categories = request.POST['categories']
     annot_method = request.POST['method']
+    polygon_segmentations = request.POST['polygon_segmentations']
     is_ref_dataset = False
     if 'refdataset' in request.POST:
         is_ref_dataset = True
@@ -128,6 +132,7 @@ def save(request):
             if annot_method == 'default':
                 data[annot_method] = list_seg
             elif annot_method == 'freelabel':
+                data['default'] = json.loads(polygon_segmentations)
                 data[annot_method] = {
                     'shapes': list_seg,
                     'classes': list_cats
@@ -146,28 +151,43 @@ def save(request):
     return JsonResponse(response)
 
 
+# mask file
 def upload_segmask_file(request):
     f = request.FILES['segmask_file']
-    pim = Image.open(f)
+    segmentations = get_segmentations_from_file(f)
+
+    list_seg = []
+    for segmentation in segmentations:
+        if len(segmentation) > 0:
+            list_x = [str(x) for x in segmentation[::2]]
+            list_y = [str(y) for y in segmentation[1::2]]
+            str_list_x = ','.join(list_x)
+            str_list_y = ','.join(list_y)
+            seg = {'x': str_list_x, 'y': str_list_y}
+            list_seg.append(seg)
+            break
+
+    return index(request, list_seg, 'POST')
+
+
+# mask file
+def get_segmentations_from_file(image_file, type='name'):
+    if type == 'name':
+        pim = Image.open(image_file)
+    else:  # type == 'content'
+        pim = Image.open(BytesIO(image_file)).convert('1')
     #width, height = im.size
     #print(width, height)
 
     mask = np.array(pim)
-    #print(npim.shape)
+    #print(mask.shape)
     #print(npim)
 
     segmentations = create_segmentations(mask)
+    #print(segmentations)
+    segmentations = [x for idx,x in enumerate(segmentations) if len(x) > 0 and idx == 0]
 
-    list_seg = []
-    for segmentation in segmentations:
-        list_x = [str(x) for x in segmentation[::2]]
-        list_y = [str(y) for y in segmentation[1::2]]
-        str_list_x = ','.join(list_x)
-        str_list_y = ','.join(list_y)
-        seg = {'x': str_list_x, 'y': str_list_y}
-        list_seg.append(seg)
-
-    return index(request, list_seg, 'POST')
+    return segmentations
 
 
 def create_segmentations(mask):
@@ -219,13 +239,14 @@ def check_score(request):
         #img = Image.open(img_file)
         #print(img.size)
 
-        score = compare_annot(img_file, annot_check, annot_src)
+        score, score2 = compare_annot(img_file, annot_check, annot_src)
         #score = 0.5
 
         response = {
             "success": True,
             "message": "Scoring done",
             "score": score,
+            "score2": score2,
             "annot": annot_check,
             "annot_src": annot_src
         }
@@ -246,9 +267,9 @@ def compare_annot(img_file, annot, annot_src):
     mask1, _ = get_img_mask(img, annot)
     #print(mask1)
     mask2, _ = get_img_mask(img, annot_src)
-    score, _, _ = iou_mask(mask1, mask2)
+    score, _, score3 = iou_mask(mask1, mask2)
     #score = 0.3
-    return score
+    return score, score3
 
 
 def compare_annot2(img_file, annot, img_mask_file):
@@ -260,13 +281,28 @@ def compare_annot2(img_file, annot, img_mask_file):
     #img2 = Image.open(img_mask_file)
     #print(img_mask_file)
     #img_mask = Image.open(img_mask_file).convert("RGBA")
-    img_mask = Image.open(BytesIO(img_mask_file)).convert('1')
+    img_mask = Image.open(BytesIO(img_mask_file)).convert('L')
+    #print(img_mask)
+    #img_mask = Image.open(BytesIO(img_mask_file)).convert("RGBA")
     #img_mask = Image.open(img_mask_file)
     mask2 = np.array(img_mask)
-    mask2 = mask2.ravel()
+    #print(np.count_nonzero(mask2 == True))
+    #print(np.count_nonzero(mask2 == False))
+    #print(mask1.size)
+    #print(mask2.size)
     mask2 = np.invert(mask2)
-    print(mask1)
-    print(mask2)
+    #print(mask1.size)
+    #print(mask2.size)
+    mask2 = mask2.astype(int)
+    #print(np.count_nonzero(mask2))
+    #mask2 = mask2.ravel()
+    mask2 = mask2.reshape(img_mask.width * img_mask.height)
+    #print(mask1.size)
+    #print(mask2.size)
+    #print(mask1)
+    #print(mask2)
+    #print(np.count_nonzero(mask1))
+    #print(np.count_nonzero(mask2))
     score, score2, score3 = iou_mask(mask1, mask2)
 
     #img_mask_1 = Image.fromarray(mask2d)
@@ -294,7 +330,9 @@ def get_img_mask(img, annot):
 
 def iou_mask(mask1, mask2):
     mask_and = np.logical_and(mask1, mask2)
+    #print(np.count_nonzero(mask_and))
     mask_or = np.logical_or(mask1, mask2)
+    #print(np.count_nonzero(mask_or))
     n_intersect = np.count_nonzero(mask_and)
     n_union = np.count_nonzero(mask_or)
     iou = n_intersect / n_union
@@ -303,6 +341,7 @@ def iou_mask(mask1, mask2):
     return iou, iou2, iou3
 
 
+# Freelabel
 def grow_refine_traces(request):
     # input params
     dataset = request.POST['dataset']
@@ -360,6 +399,9 @@ def grow_refine_traces(request):
            "image/png" + ";" +
            "base64," + base64.b64encode(img_mask_1).decode('ascii'))
 
+    segmentation = get_segmentations_from_file(r.content, type="content")
+    #print(segmentation)
+
     # response
     response = {
         "success": True,
@@ -368,6 +410,7 @@ def grow_refine_traces(request):
         "score_2": score2,
         "score_3": score3,
         "image_base64": uri,
-        "image_base64_2": uri2
+        "image_base64_2": uri2,
+        "polygon_segmentations": segmentation
     }
     return JsonResponse(response)

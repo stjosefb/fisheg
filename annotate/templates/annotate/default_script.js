@@ -85,7 +85,7 @@ $( document ).ready(function() {
                 data: form.serialize(), // serializes the form's elements.
                 success: function(data)
                 {
-                  $('#score').text(data.score);
+                  $('#score').text(data.score + ' ' + data.score2);
                   setTimeout(hideScore, 1000);
                 }
             });

@@ -58,7 +58,8 @@ $( document ).ready(function() {
                   console.log(data);
                   $('#img_result').attr("src",data.image_base64);
                   $('#img_result_2').attr("src",data.image_base64_2);
-                  $('#score').text(data.score + ' ' + data.score_2 + ' ' + data.score_3);
+                  $('#polygon_segmentations').val(JSON.stringify(data.polygon_segmentations));
+                  $('#score').text(data.score + ' ' + data.score_3);
                   //$('#save_msg').text('Saved');
                   //setTimeout(hideSavedMsg, 1000);
                 }
