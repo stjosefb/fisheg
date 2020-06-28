@@ -32,7 +32,12 @@ def index(request, list_seg_in=None, method='GET'):
         ref_dataset = input_req['refdataset']
     dataset = input_req['dataset']
     data_id = input_req['data_id']
-    annot_method = input_req['method'] if 'method' in input_req else 'default'
+
+    #annot_method = input_req['method'] if 'method' in input_req else 'default'
+    if 'method' in input_req:
+        annot_method = input_req['method']
+    else:
+        annot_method = ''
 
     # get image
     image_info_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS,
@@ -59,6 +64,11 @@ def index(request, list_seg_in=None, method='GET'):
         try:
             with open(polygon_annot_file) as f:
                 annot = json.load(f)
+                if annot_method == '':
+                    if 'method' in annot:
+                        annot_method = annot['method']
+                    else:
+                        annot_method = 'default'
                 if annot_method == 'default':
                     polygon_annot = annot[annot_method]
                 elif annot_method == 'freelabel':
@@ -137,6 +147,7 @@ def save(request):
                     'shapes': list_seg,
                     'classes': list_cats
                 }
+            data['method'] = annot_method
             with open(datasets_dir + '/' + str(data_id) + '.json', 'w') as f:
                 json.dump(data, f)
         else:
