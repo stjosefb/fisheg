@@ -119,6 +119,7 @@ def save(request):
     annot = request.POST['annot']
     categories = request.POST['categories']
     annot_method = request.POST['method']
+    score = request.POST['scores']
     polygon_segmentations = request.POST['polygon_segmentations']
     is_ref_dataset = False
     if 'refdataset' in request.POST:
@@ -148,6 +149,14 @@ def save(request):
                     'classes': list_cats
                 }
             data['method'] = annot_method
+            if is_ref_dataset:
+                scores = score.split(';')
+                if len(scores) == 2:
+                    data['score_jaccard'] = scores[0]
+                    data['score_dice'] = scores[1]
+                else:
+                    data['score_jaccard'] = None
+                    data['score_dice'] = None
             with open(datasets_dir + '/' + str(data_id) + '.json', 'w') as f:
                 json.dump(data, f)
         else:

@@ -86,6 +86,7 @@ $( document ).ready(function() {
                 success: function(data)
                 {
                   $('#score').text(data.score + ' ' + data.score2);
+                  $('#scores').val(data.score + ';' + data.score2);
                   setTimeout(hideScore, 1000);
                 }
             });

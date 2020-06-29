@@ -60,6 +60,7 @@ $( document ).ready(function() {
                   $('#img_result_2').attr("src",data.image_base64_2);
                   $('#polygon_segmentations').val(JSON.stringify(data.polygon_segmentations));
                   $('#score').text(data.score + ' ' + data.score_3);
+                  $('#scores').val(data.score + ';' + data.score_3);
                   //$('#save_msg').text('Saved');
                   //setTimeout(hideSavedMsg, 1000);
                 }
