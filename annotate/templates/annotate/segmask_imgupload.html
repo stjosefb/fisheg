@@ -2,6 +2,7 @@
     {% csrf_token %}
     <input type="hidden" value="{{data_id}}" name="data_id">
     <input type="hidden" value="{{dataset}}" name="dataset">
+    <input type="hidden" name="method" value="{{ method }}">
     {% if is_ref_dataset %}
         <input type="hidden" value="{{ref_dataset}}" name="refdataset">
     {% endif %}

@@ -17,7 +17,7 @@ import base64
 from io import BytesIO
 
 
-def index(request, list_seg_in=None, method='GET'):
+def index(request, list_seg_in=None, method='GET', data={}):
     # return HttpResponse("Hello, world. You're at the annotation index.")
     #message = ''
     #if 'message' in request.GET:
@@ -76,6 +76,8 @@ def index(request, list_seg_in=None, method='GET'):
                         polygon_annot = annot[annot_method]['shapes']
                     else:
                         polygon_annot = []
+                elif annot_method == 'imagemask':
+                    polygon_annot = annot['default']
                 for key, region in enumerate(polygon_annot):
                     list_x = [str(x) for x in region[::2]]
                     list_y = [str(y) for y in region[1::2]]
@@ -105,9 +107,11 @@ def index(request, list_seg_in=None, method='GET'):
         #'list_x': str_list_x,
         #'list_y': str_list_y,
         'list_seg': list_seg,
-        'method': annot_method
+        'method': annot_method if annot_method != '' else 'default'
         # 'message': message
     }
+    if data:
+        context.update(data)
     if is_ref_dataset:
         context['ref_dataset'] = ref_dataset
     return HttpResponse(template.render(context, request))
@@ -148,6 +152,9 @@ def save(request):
                     'shapes': list_seg,
                     'classes': list_cats
                 }
+            elif annot_method == 'imagemask':
+                data['default'] = list_seg
+                data[annot_method] = polygon_segmentations
             data['method'] = annot_method
             if is_ref_dataset:
                 scores = score.split(';')
@@ -174,7 +181,7 @@ def save(request):
 # mask file
 def upload_segmask_file(request):
     f = request.FILES['segmask_file']
-    segmentations = get_segmentations_from_file(f)
+    segmentations, base64image = get_segmentations_from_file(f)
 
     list_seg = []
     for segmentation in segmentations:
@@ -187,7 +194,9 @@ def upload_segmask_file(request):
             list_seg.append(seg)
             break
 
-    return index(request, list_seg, 'POST')
+    data = {'base64image': base64image}
+
+    return index(request, list_seg, 'POST', data)
 
 
 # mask file
@@ -207,7 +216,15 @@ def get_segmentations_from_file(image_file, type='name'):
     #print(segmentations)
     segmentations = [x for idx,x in enumerate(segmentations) if len(x) > 0 and idx == 0]
 
-    return segmentations
+    if type == 'name':
+        buffered = BytesIO()
+        pim.save(buffered, format="PNG")
+        im_bytes = buffered.getvalue()
+        base64image = "data:image/png;base64," + base64.b64encode(im_bytes).decode('ascii')
+
+        return segmentations, base64image
+    else:
+        return segmentations
 
 
 def create_segmentations(mask):

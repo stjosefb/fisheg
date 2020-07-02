@@ -26,6 +26,7 @@
         Annotation method/tool:
         <select id="annotMethod" onchange="changeMethod()">
             <option value="default">Default (VIA)</option>
+            <option value="imagemask">Upload Image Mask</option>
             {# <option value="bylabel" disabled>ByLabel</option> #}
             <option value="freelabel">FreeLabel</option>
             {# <option value="maskrcnn" disabled>Utilizing Mask R-CNN</option> #}
@@ -69,6 +70,8 @@
 
 {% if method == 'default' %}
 {% include "annotate/default.html" %}
+{% elif method == 'imagemask' %}
+{% include "annotate/default.html" %}
 {% elif method == 'freelabel' %}
 {% include "annotate/freelabel.html" %}
 {% endif %}
@@ -88,13 +91,21 @@ function changeMethod() {.6
 
 $( document ).ready(function() {
     $("#annotMethod").val("{{ method }}");
+    {% if base64image %}
+        $('#polygon_segmentations').val('{{ base64image }}');
+    {% endif %}
+    {% if not is_ref_dataset %}
+        $('#btnScore').hide();
+    {% endif %}
 });
 
 {% if method == 'default' %}
-{% include "annotate/default_script.js" %}
+    {% include "annotate/default_script.js" %}
+{% elif method == 'imagemask' %}
+    {% include "annotate/default_script.js" %}
 {% elif method == 'freelabel' %}
-{% include "annotate/freelabel_script.js" %}
-{% include "annotate/default_script.js" %}
+    {% include "annotate/freelabel_script.js" %}
+    {% include "annotate/default_script.js" %}
 {% endif %}
 
 </script>
