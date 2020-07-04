@@ -77,7 +77,13 @@ $( document ).ready(function() {
                 list_seg.push(seg);
             }
 
+            {% if method == 'default' %}
             $('input[name="annot"]').val(JSON.stringify(list_seg));
+            {% elif method == 'imagemask' %}
+            $('input[name="annot"]').val($('#polygon_segmentations').val());
+            {% endif %}
+
+
 
             $.ajax({
                 type: "POST",

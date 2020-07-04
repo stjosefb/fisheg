@@ -202,7 +202,7 @@ def check_score(request):
     data_id = request.POST['data_id']
     dataset = request.POST['dataset']
     annot = request.POST['annot']
-    annot_check = json.loads(annot)
+    method = request.POST['method']
 
     annot_src = ''
     polygon_annot_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS,
@@ -227,15 +227,24 @@ def check_score(request):
         #print(img.size)
 
         if annot_obj['method'] == 'imagemask':
-            encoded_img_elmts = annot_src.split(',', 1)
-            img_content_mask = base64.decodebytes(encoded_img_elmts[1].encode('ascii'))
-            score, score2, _ = lib_mask.annot_polygon_compare_img_content_mask(
-                img_file, annot_check, img_content_mask, invert=False
-            )
+            encoded_img_elmts_1 = annot_src.split(',', 1)
+            img_content_mask_1 = base64.decodebytes(encoded_img_elmts_1[1].encode('ascii'))
+            if method == 'imagemask':
+                encoded_img_elmts_2 = annot.split(',', 1)
+                img_content_mask_2 = base64.decodebytes(encoded_img_elmts_2[1].encode('ascii'))
+                annot_check = annot
+                score, score2, _ = lib_mask.annot_img_content_mask_compare(img_content_mask_1, img_content_mask_2)
+            else:
+                annot_check = json.loads(annot)
+                score, score2, _ = lib_mask.annot_polygon_compare_img_content_mask(
+                    img_file, annot_check, img_content_mask_1, invert=False
+                )
+
             #uri2 = ("data:" +
             #    "image/png" + ";" +
             #    "base64," + encoded_img_elmts[1])
         else:
+            annot_check = json.loads(annot)
             score, score2 = lib_mask.annot_polygon_compare(img_file, annot_check, annot_src)
         #score = 0.5
 
@@ -253,8 +262,8 @@ def check_score(request):
             "success": False,
             "message": "Scoring cannot be done",
             "score": -1,
-            "annot": annot_check,
-            "annot_src": annot_src
+            "annot": [],
+            "annot_src": []
         }
     return JsonResponse(response)
 

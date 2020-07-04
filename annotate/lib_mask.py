@@ -16,6 +16,24 @@ def annot_polygon_compare(img_file, annot, annot_src):
     return score_jaccard, score_dice
 
 
+def annot_img_content_mask_compare(img_mask_file_1, img_mask_file_2):
+    img_mask_1 = Image.open(BytesIO(img_mask_file_1)).convert('L')
+    img_mask_2 = Image.open(BytesIO(img_mask_file_2)).convert('L')
+    mask1 = np.array(img_mask_1)
+    mask1 = mask1.astype(int)
+    mask1 = mask1.reshape(img_mask_1.width * img_mask_1.height)
+    mask2 = np.array(img_mask_2)
+    mask2 = mask2.astype(int)
+    mask2 = mask2.reshape(img_mask_2.width * img_mask_2.height)
+    score_jaccard, score_dice = _score_mask_similarity(mask1, mask2)
+
+    buffered = BytesIO()
+    img_mask_1.save(buffered, format="PNG")
+    im_bytes = buffered.getvalue()
+
+    return score_jaccard, score_dice, im_bytes
+
+
 def annot_polygon_compare_img_content_mask(img_file, annot, img_mask_file, invert=True):
     img = Image.open(img_file)
     mask1, img_mask_1 = _get_mask_from_polygon_by_img(img, annot)
