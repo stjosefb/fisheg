@@ -6,15 +6,14 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib.sites.shortcuts import get_current_site
 from django.template import loader
 from fisheg import settings
-from PIL import Image, ImageDraw
-from skimage import measure
-from shapely.geometry import Polygon
+from PIL import Image
+
 import json
 import os
-import numpy as np
 import requests
 import base64
-from io import BytesIO
+
+import annotate.lib_mask as lib_mask
 
 
 def index(request, list_seg_in=None, method='GET', data={}):
@@ -181,7 +180,7 @@ def save(request):
 # mask file
 def upload_segmask_file(request):
     f = request.FILES['segmask_file']
-    segmentations, base64image = get_segmentations_from_file(f)
+    segmentations, base64image = lib_mask.get_polygons_from_img_mask(f)
 
     list_seg = []
     for segmentation in segmentations:
@@ -199,56 +198,6 @@ def upload_segmask_file(request):
     return index(request, list_seg, 'POST', data)
 
 
-# mask file
-def get_segmentations_from_file(image_file, type='name'):
-    if type == 'name':
-        pim = Image.open(image_file)
-    else:  # type == 'content'
-        pim = Image.open(BytesIO(image_file)).convert('1')
-    #width, height = im.size
-    #print(width, height)
-
-    mask = np.array(pim)
-    #print(mask.shape)
-    #print(npim)
-
-    segmentations = create_segmentations(mask)
-    #print(segmentations)
-    segmentations = [x for idx,x in enumerate(segmentations) if len(x) > 0 and idx == 0]
-
-    if type == 'name':
-        buffered = BytesIO()
-        pim.save(buffered, format="PNG")
-        im_bytes = buffered.getvalue()
-        base64image = "data:image/png;base64," + base64.b64encode(im_bytes).decode('ascii')
-
-        return segmentations, base64image
-    else:
-        return segmentations
-
-
-def create_segmentations(mask):
-    contours = measure.find_contours(mask, 0.5, positive_orientation='low')
-
-    segmentations = []
-    polygons = []
-    for contour in contours:
-        # Flip from (row, col) representation to (x, y)
-        # and subtract the padding pixel
-        for i in range(len(contour)):
-            row, col = contour[i]
-            contour[i] = (col - 1, row - 1)
-
-        # Make a polygon and simplify it
-        poly = Polygon(contour)
-        poly = poly.simplify(1.0, preserve_topology=False)
-        polygons.append(poly)
-        segmentation = np.array(poly.exterior.coords).ravel().tolist()
-        segmentations.append(segmentation)
-
-    return segmentations
-
-
 def check_score(request):
     data_id = request.POST['data_id']
     dataset = request.POST['dataset']
@@ -261,7 +210,8 @@ def check_score(request):
     try:
         with open(polygon_annot_file) as f:
             annot_obj = json.load(f)
-            annot_src = annot_obj['default']
+            #annot_src = annot_obj['default']
+            annot_src = annot_obj[annot_obj['method']]
     except FileNotFoundError:
         pass
 
@@ -276,7 +226,17 @@ def check_score(request):
         #img = Image.open(img_file)
         #print(img.size)
 
-        score, score2 = compare_annot(img_file, annot_check, annot_src)
+        if annot_obj['method'] == 'imagemask':
+            encoded_img_elmts = annot_src.split(',', 1)
+            img_content_mask = base64.decodebytes(encoded_img_elmts[1].encode('ascii'))
+            score, score2, _ = lib_mask.annot_polygon_compare_img_content_mask(
+                img_file, annot_check, img_content_mask, invert=False
+            )
+            #uri2 = ("data:" +
+            #    "image/png" + ";" +
+            #    "base64," + encoded_img_elmts[1])
+        else:
+            score, score2 = lib_mask.annot_polygon_compare(img_file, annot_check, annot_src)
         #score = 0.5
 
         response = {
@@ -284,6 +244,7 @@ def check_score(request):
             "message": "Scoring done",
             "score": score,
             "score2": score2,
+            #"image_base64": uri2,
             "annot": annot_check,
             "annot_src": annot_src
         }
@@ -298,87 +259,7 @@ def check_score(request):
     return JsonResponse(response)
 
 
-def compare_annot(img_file, annot, annot_src):
-    img = Image.open(img_file)
-    #print(img.size)
-    mask1, _ = get_img_mask(img, annot)
-    #print(mask1)
-    mask2, _ = get_img_mask(img, annot_src)
-    score, _, score3 = iou_mask(mask1, mask2)
-    #score = 0.3
-    return score, score3
-
-
-def compare_annot2(img_file, annot, img_mask_file):
-    img = Image.open(img_file)
-    #print(img.size)
-    mask1, img_mask_1 = get_img_mask(img, annot)
-    #print(mask1)
-    #mask2 = get_img_mask(img, annot_src)
-    #img2 = Image.open(img_mask_file)
-    #print(img_mask_file)
-    #img_mask = Image.open(img_mask_file).convert("RGBA")
-    img_mask = Image.open(BytesIO(img_mask_file)).convert('L')
-    #print(img_mask)
-    #img_mask = Image.open(BytesIO(img_mask_file)).convert("RGBA")
-    #img_mask = Image.open(img_mask_file)
-    mask2 = np.array(img_mask)
-    #print(np.count_nonzero(mask2 == True))
-    #print(np.count_nonzero(mask2 == False))
-    #print(mask1.size)
-    #print(mask2.size)
-    mask2 = np.invert(mask2)
-    #print(mask1.size)
-    #print(mask2.size)
-    mask2 = mask2.astype(int)
-    #print(np.count_nonzero(mask2))
-    #mask2 = mask2.ravel()
-    mask2 = mask2.reshape(img_mask.width * img_mask.height)
-    #print(mask1.size)
-    #print(mask2.size)
-    #print(mask1)
-    #print(mask2)
-    #print(np.count_nonzero(mask1))
-    #print(np.count_nonzero(mask2))
-    score, score2, score3 = iou_mask(mask1, mask2)
-
-    #img_mask_1 = Image.fromarray(mask2d)
-    buffered = BytesIO()
-    img_mask_1.save(buffered, format="PNG")
-    im_bytes = buffered.getvalue()
-    #img_mask_file_1 = base64.b64encode(buffered.getvalue())
-
-    #score = 0.3
-    return score, im_bytes, score2, score3
-
-
-def get_img_mask(img, annot):
-    size = img.size
-    img2 = Image.new('L', size, 'black')
-    draw = ImageDraw.Draw(img2)
-    for polygon in annot:
-        draw.polygon(polygon, fill='white')
-
-    mask2d = np.array(img2)
-    mask = mask2d.reshape(img2.width * img2.height)
-
-    return mask, img2
-
-
-def iou_mask(mask1, mask2):
-    mask_and = np.logical_and(mask1, mask2)
-    #print(np.count_nonzero(mask_and))
-    mask_or = np.logical_or(mask1, mask2)
-    #print(np.count_nonzero(mask_or))
-    n_intersect = np.count_nonzero(mask_and)
-    n_union = np.count_nonzero(mask_or)
-    iou = n_intersect / n_union
-    iou2 = np.count_nonzero(mask1) / n_union
-    iou3 = (2 * n_intersect) / (np.count_nonzero(mask1) + np.count_nonzero(mask2))
-    return iou, iou2, iou3
-
-
-# Freelabel
+# freelabel
 def grow_refine_traces(request):
     # input params
     dataset = request.POST['dataset']
@@ -430,22 +311,22 @@ def grow_refine_traces(request):
 
     # score
     #print(r.content)
-    score, img_mask_1, score2, score3 = compare_annot2(img_file, annot_src, r.content)
+    score_jaccard, score_dice, img_mask_1 = lib_mask.annot_polygon_compare_img_content_mask(img_file, annot_src, r.content)
 
     uri2 = ("data:" +
            "image/png" + ";" +
            "base64," + base64.b64encode(img_mask_1).decode('ascii'))
 
-    segmentation = get_segmentations_from_file(r.content, type="content")
+    segmentation = lib_mask.get_polygons_from_img_mask(r.content, type="content")
     #print(segmentation)
 
     # response
     response = {
         "success": True,
         "message": "Done",
-        "score": score,
-        "score_2": score2,
-        "score_3": score3,
+        "score": score_jaccard,
+        "score_2": None,
+        "score_3": score_dice,
         "image_base64": uri,
         "image_base64_2": uri2,
         "polygon_segmentations": segmentation

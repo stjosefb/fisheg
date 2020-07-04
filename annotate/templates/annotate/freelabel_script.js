@@ -55,7 +55,7 @@ $( document ).ready(function() {
                 //dataType: 'image/png',
                 success: function(data)
                 {
-                  console.log(data);
+                  //console.log(data);
                   $('#img_result').attr("src",data.image_base64);
                   $('#img_result_2').attr("src",data.image_base64_2);
                   $('#polygon_segmentations').val(JSON.stringify(data.polygon_segmentations));

@@ -87,6 +87,7 @@ $( document ).ready(function() {
                 {
                   $('#score').text(data.score + ' ' + data.score2);
                   $('#scores').val(data.score + ';' + data.score2);
+                  {#$('#img_result').attr("src",data.image_base64);#}
                   setTimeout(hideScore, 1000);
                 }
             });
