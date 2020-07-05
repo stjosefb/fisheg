@@ -78,7 +78,8 @@ def index(request, list_seg_in=None, method='GET', data={}):
                 elif annot_method == 'imagemask':
                     polygon_annot = annot['default']
                     data = {}
-                    data['base64image'] = annot[annot_method]
+                    data['base64image'] = lib_mask.img_base64_change_mask_color_transparent(annot[annot_method]) if annot_method in annot else '#'
+                    data['showRegion'] = False
                 for key, region in enumerate(polygon_annot):
                     list_x = [str(x) for x in region[::2]]
                     list_y = [str(y) for y in region[1::2]]
@@ -113,6 +114,8 @@ def index(request, list_seg_in=None, method='GET', data={}):
     }
     if data:
         context.update(data)
+    if 'showRegion' not in context:
+        context['showRegion'] = True
     if is_ref_dataset:
         context['ref_dataset'] = ref_dataset
     return HttpResponse(template.render(context, request))
@@ -197,7 +200,7 @@ def upload_segmask_file(request):
             list_seg.append(seg)
             break
 
-    data = {'base64image': base64image}
+    data = {'base64image': lib_mask.img_base64_change_mask_color_transparent(base64image), 'showRegion': True}
 
     return index(request, list_seg, 'POST', data)
 
@@ -236,7 +239,8 @@ def check_score(request):
             if method == 'imagemask':
                 encoded_img_elmts_2 = annot.split(',', 1)
                 img_content_mask_2 = base64.decodebytes(encoded_img_elmts_2[1].encode('ascii'))
-                annot_check = annot
+                img_content_mask_2 = lib_mask.img_content_change_mask_color_solid(img_content_mask_2)
+                #annot_check = annot
                 score, score2, _, _ = lib_mask.annot_img_content_mask_compare(img_content_mask_1, img_content_mask_2)
             else:
                 annot_check = json.loads(annot)

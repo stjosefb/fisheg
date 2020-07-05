@@ -95,6 +95,7 @@ $( document ).ready(function() {
     $("#annotMethod").val("{{ method }}");
     {% if base64image %}
         $('#base64_img_mask').val('{{ base64image }}');
+        $('#maskImg').attr('src','{{ base64image }}');
     {% endif %}
     {% if not is_ref_dataset %}
         $('#btnScore').hide();
