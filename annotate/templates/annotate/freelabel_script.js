@@ -56,9 +56,10 @@ $( document ).ready(function() {
                 success: function(data)
                 {
                   //console.log(data);
-                  $('#img_result').attr("src",data.image_base64);
-                  $('#img_result_2').attr("src",data.image_base64_2);
+                  $('#img_result').attr("src",data.image_base64_freelabel);
+                  $('#img_result_2').attr("src",data.image_base64_ref);
                   $('#polygon_segmentations').val(JSON.stringify(data.polygon_segmentations));
+                  $('#base64_img_mask').val(data.image_base64_freelabel);
                   $('#score').text(data.score + ' ' + data.score_3);
                   $('#scores').val(data.score + ';' + data.score_3);
                   //$('#save_msg').text('Saved');

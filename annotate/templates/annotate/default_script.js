@@ -80,10 +80,8 @@ $( document ).ready(function() {
             {% if method == 'default' %}
             $('input[name="annot"]').val(JSON.stringify(list_seg));
             {% elif method == 'imagemask' %}
-            $('input[name="annot"]').val($('#polygon_segmentations').val());
+            $('input[name="annot"]').val($('#base64_img_mask').val());
             {% endif %}
-
-
 
             $.ajax({
                 type: "POST",

@@ -77,6 +77,8 @@ def index(request, list_seg_in=None, method='GET', data={}):
                         polygon_annot = []
                 elif annot_method == 'imagemask':
                     polygon_annot = annot['default']
+                    data = {}
+                    data['base64image'] = annot[annot_method]
                 for key, region in enumerate(polygon_annot):
                     list_x = [str(x) for x in region[::2]]
                     list_y = [str(y) for y in region[1::2]]
@@ -124,6 +126,7 @@ def save(request):
     annot_method = request.POST['method']
     score = request.POST['scores']
     polygon_segmentations = request.POST['polygon_segmentations']
+    base64_img_mask = request.POST['base64_img_mask']
     is_ref_dataset = False
     if 'refdataset' in request.POST:
         is_ref_dataset = True
@@ -147,13 +150,14 @@ def save(request):
                 data[annot_method] = list_seg
             elif annot_method == 'freelabel':
                 data['default'] = json.loads(polygon_segmentations)
+                data['imagemask'] = base64_img_mask
                 data[annot_method] = {
                     'shapes': list_seg,
                     'classes': list_cats
                 }
             elif annot_method == 'imagemask':
                 data['default'] = list_seg
-                data[annot_method] = polygon_segmentations
+                data[annot_method] = base64_img_mask
             data['method'] = annot_method
             if is_ref_dataset:
                 scores = score.split(';')
@@ -233,7 +237,7 @@ def check_score(request):
                 encoded_img_elmts_2 = annot.split(',', 1)
                 img_content_mask_2 = base64.decodebytes(encoded_img_elmts_2[1].encode('ascii'))
                 annot_check = annot
-                score, score2, _ = lib_mask.annot_img_content_mask_compare(img_content_mask_1, img_content_mask_2)
+                score, score2, _, _ = lib_mask.annot_img_content_mask_compare(img_content_mask_1, img_content_mask_2)
             else:
                 annot_check = json.loads(annot)
                 score, score2, _ = lib_mask.annot_polygon_compare_img_content_mask(
@@ -254,16 +258,16 @@ def check_score(request):
             "score": score,
             "score2": score2,
             #"image_base64": uri2,
-            "annot": annot_check,
-            "annot_src": annot_src
+            #"annot": annot_check,
+            #"annot_src": annot_src
         }
     else:
         response = {
             "success": False,
             "message": "Scoring cannot be done",
             "score": -1,
-            "annot": [],
-            "annot_src": []
+            #"annot": [],
+            #"annot_src": []
         }
     return JsonResponse(response)
 
@@ -292,40 +296,49 @@ def grow_refine_traces(request):
     url = 'http://localhost:9000/freelabel/refine2/'
     r = requests.post(url, data=payload)
 
-    # result
-    uri = ("data:" +
-           r.headers['Content-Type'] + ";" +
-           "base64," + base64.b64encode(r.content).decode('ascii'))
+    # # reference annotation
+    # annot_src = ''
+    # polygon_annot_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS,
+    #                                data_id + '.json'])
+    # #print(polygon_annot_file)
+    # try:
+    #     with open(polygon_annot_file) as f:
+    #         annot_obj = json.load(f)
+    #         annot_src = annot_obj['default']
+    # except FileNotFoundError:
+    #     pass
+    # #print(annot_src)
+    # if annot_src != '':
+    #     image_info_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS,
+    #                                 data_id + '.json'])
+    #     #print(image_info_file)
+    #     with open(image_info_file) as f:
+    #         image_info = json.load(f)
+    #         img_file = image_info['image']
+    #
+    #
+    # # score
+    # #print(r.content)
+    # score_jaccard, score_dice, img_mask_1 = lib_mask.annot_polygon_compare_img_content_mask(img_file, annot_src, r.content)
 
-    # reference annotation
-    annot_src = ''
+    # scoring
+    image_info_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS,
+                                data_id + '.json'])
     polygon_annot_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS,
                                    data_id + '.json'])
-    #print(polygon_annot_file)
-    try:
-        with open(polygon_annot_file) as f:
-            annot_obj = json.load(f)
-            annot_src = annot_obj['default']
-    except FileNotFoundError:
-        pass
-    #print(annot_src)
-    if annot_src != '':
-        image_info_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS,
-                                    data_id + '.json'])
-        #print(image_info_file)
-        with open(image_info_file) as f:
-            image_info = json.load(f)
-            img_file = image_info['image']
+    score_jaccard, score_dice, img_mask_1, img_mask_2 = lib_mask.score_against_ref_by_img_content(image_info_file, polygon_annot_file, r.content)
 
+    # image mask: freelabel
+    uri_img_mask_freelabel = ("data:" +
+           r.headers['Content-Type'] + ";" +
+           "base64," + base64.b64encode(img_mask_2).decode('ascii'))
 
-    # score
-    #print(r.content)
-    score_jaccard, score_dice, img_mask_1 = lib_mask.annot_polygon_compare_img_content_mask(img_file, annot_src, r.content)
-
-    uri2 = ("data:" +
+    # image mask: reference
+    uri_img_mask_ref = ("data:" +
            "image/png" + ";" +
            "base64," + base64.b64encode(img_mask_1).decode('ascii'))
 
+    # image mask to polygons
     segmentation = lib_mask.get_polygons_from_img_mask(r.content, type="content")
     #print(segmentation)
 
@@ -336,8 +349,8 @@ def grow_refine_traces(request):
         "score": score_jaccard,
         "score_2": None,
         "score_3": score_dice,
-        "image_base64": uri,
-        "image_base64_2": uri2,
+        "image_base64_freelabel": uri_img_mask_freelabel,
+        "image_base64_ref": uri_img_mask_ref,
         "polygon_segmentations": segmentation
     }
     return JsonResponse(response)

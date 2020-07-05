@@ -1,12 +1,43 @@
 import base64
+import json
 import numpy as np
 
 from io import BytesIO
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageOps
 from skimage import measure
 from shapely.geometry import Polygon
 
+
 # ## PUBLIC
+
+def score_against_ref_by_img_content(image_info_file, base_annot_file, img_content):
+    score_jaccard = 0
+    score_dice = 0
+    img_mask_1 = None
+
+    # reference annotation
+    annot_src = ''
+    try:
+        with open(base_annot_file) as f:
+            annot_obj = json.load(f)
+            annot_src = annot_obj[annot_obj['method']]
+    except FileNotFoundError:
+        pass
+
+    if annot_src != '':
+        with open(image_info_file) as f:
+            image_info = json.load(f)
+            img_file = image_info['image']
+
+        if annot_obj['method'] == 'imagemask':
+            encoded_elmts_img_reg = annot_src.split(',', 1)
+            img_content_ref = base64.decodebytes(encoded_elmts_img_reg[1].encode('ascii'))
+            score_jaccard, score_dice, img_mask_1, img_mask_2 = annot_img_content_mask_compare(img_content_ref, img_content, invert=True)
+        else:  # method == 'default'
+            score_jaccard, score_dice, img_mask_1 = annot_polygon_compare_img_content_mask(img_file, annot_src, img_content)
+
+    return score_jaccard, score_dice, img_mask_1, img_mask_2
+
 
 def annot_polygon_compare(img_file, annot, annot_src):
     img = Image.open(img_file)
@@ -16,13 +47,15 @@ def annot_polygon_compare(img_file, annot, annot_src):
     return score_jaccard, score_dice
 
 
-def annot_img_content_mask_compare(img_mask_file_1, img_mask_file_2):
+def annot_img_content_mask_compare(img_mask_file_1, img_mask_file_2, invert=False):
     img_mask_1 = Image.open(BytesIO(img_mask_file_1)).convert('L')
     img_mask_2 = Image.open(BytesIO(img_mask_file_2)).convert('L')
     mask1 = np.array(img_mask_1)
     mask1 = mask1.astype(int)
     mask1 = mask1.reshape(img_mask_1.width * img_mask_1.height)
     mask2 = np.array(img_mask_2)
+    if invert:
+        mask2 = np.invert(mask2)
     mask2 = mask2.astype(int)
     mask2 = mask2.reshape(img_mask_2.width * img_mask_2.height)
     score_jaccard, score_dice = _score_mask_similarity(mask1, mask2)
@@ -31,7 +64,12 @@ def annot_img_content_mask_compare(img_mask_file_1, img_mask_file_2):
     img_mask_1.save(buffered, format="PNG")
     im_bytes = buffered.getvalue()
 
-    return score_jaccard, score_dice, im_bytes
+    img_mask_2_invert = ImageOps.invert(img_mask_2)
+    buffered = BytesIO()
+    img_mask_2_invert.save(buffered, format="PNG")
+    im_bytes2 = buffered.getvalue()
+
+    return score_jaccard, score_dice, im_bytes, im_bytes2
 
 
 def annot_polygon_compare_img_content_mask(img_file, annot, img_mask_file, invert=True):
