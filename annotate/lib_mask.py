@@ -25,6 +25,42 @@ def img_base64_change_mask_color_transparent(img_base64):
     encoded_elmts_img_base64 = img_base64.split(',', 1)
     img_content = base64.decodebytes(encoded_elmts_img_base64[1].encode('ascii'))
 
+    img_content_new = img_content_change_mask_color_transparent(img_content)
+
+    img_base64_new = ("data:" +
+                        "image/png" + ";" +
+                        "base64," + base64.b64encode(img_content_new).decode('ascii'))
+
+    return img_base64_new
+
+    # im = Image.open(BytesIO(img_content))
+    # im = im.convert('RGBA')
+    #
+    # data = np.array(im)  # "data" is a height x width x 4 numpy array
+    # red, green, blue, alpha = data.T  # Temporarily unpack the bands for readability
+    #
+    # # Replace white with red... (leaves alpha values alone...)
+    # white_areas = (red > 0) & (blue > 0) & (green > 0)
+    # black_areas = (red == 0) & (blue == 0) & (green == 0)
+    # #data[..., :-1][black_areas.T] = (255, 255, 255)  # Transpose back needed
+    # data[...][black_areas.T] = (255, 255, 255, 0)  # Transpose back needed
+    # data[..., :-1][white_areas.T] = (128, 0, 0)  # Transpose back needed
+    #
+    # im_new = Image.fromarray(data)
+    #
+    #
+    # buffered = BytesIO()
+    # im_new.save(buffered, format="PNG")
+    # im_new_bytes = buffered.getvalue()
+    #
+    # img_base64_new = ("data:" +
+    #                     "image/png" + ";" +
+    #                     "base64," + base64.b64encode(im_new_bytes).decode('ascii'))
+    # #img_base64_new = '#'
+    # return img_base64_new
+
+
+def img_content_change_mask_color_transparent(img_content):
     im = Image.open(BytesIO(img_content))
     im = im.convert('RGBA')
 
@@ -40,17 +76,37 @@ def img_base64_change_mask_color_transparent(img_base64):
 
     im_new = Image.fromarray(data)
 
+    buffered = BytesIO()
+    im_new.save(buffered, format="PNG")
+    im_new_bytes = buffered.getvalue()
+
+    #img_base64_new = '#'
+    return im_new_bytes
+
+
+def img_content_change_mask_color_from_black(img_content):
+    im = Image.open(BytesIO(img_content))
+    im = im.convert('RGBA')
+
+    data = np.array(im)  # "data" is a height x width x 4 numpy array
+    red, green, blue, alpha = data.T  # Temporarily unpack the bands for readability
+
+    # Replace white with red... (leaves alpha values alone...)
+    white_areas = (red > 0) & (blue > 0) & (green > 0)
+    black_areas = (red == 0) & (blue == 0) & (green == 0)
+    #data[..., :-1][black_areas.T] = (255, 255, 255)  # Transpose back needed
+    #data[...][black_areas.T] = (128, 0, 0, 0)  # Transpose back needed
+    data[..., :-1][black_areas.T] = (128, 0, 0)  # Transpose back needed
+    #data[..., :-1][white_areas.T] = (128, 0, 0)  # Transpose back needed
+
+    im_new = Image.fromarray(data)
 
     buffered = BytesIO()
     im_new.save(buffered, format="PNG")
     im_new_bytes = buffered.getvalue()
 
-    img_base64_new = ("data:" +
-                        "image/png" + ";" +
-                        "base64," + base64.b64encode(im_new_bytes).decode('ascii'))
     #img_base64_new = '#'
-    return img_base64_new
-
+    return im_new_bytes
 
 def score_against_ref_by_img_content(image_info_file, base_annot_file, img_content):
     score_jaccard = 0
@@ -71,12 +127,13 @@ def score_against_ref_by_img_content(image_info_file, base_annot_file, img_conte
             image_info = json.load(f)
             img_file = image_info['image']
 
+        #img_content = img_content_change_mask_color_from_black(img_content)
         if annot_obj['method'] == 'imagemask':
             encoded_elmts_img_reg = annot_src.split(',', 1)
             img_content_ref = base64.decodebytes(encoded_elmts_img_reg[1].encode('ascii'))
             score_jaccard, score_dice, img_mask_1, img_mask_2 = annot_img_content_mask_compare(img_content_ref, img_content, invert=True)
         else:  # method == 'default'
-            score_jaccard, score_dice, img_mask_1 = annot_polygon_compare_img_content_mask(img_file, annot_src, img_content)
+            score_jaccard, score_dice, img_mask_1, img_mask_2 = annot_polygon_compare_img_content_mask(img_file, annot_src, img_content)
 
     return score_jaccard, score_dice, img_mask_1, img_mask_2
 
@@ -126,10 +183,17 @@ def annot_polygon_compare_img_content_mask(img_file, annot, img_mask_file, inver
     score_jaccard, score_dice = _score_mask_similarity(mask1, mask2)
 
     buffered = BytesIO()
+    #img_mask_1 = img_content_change_mask_color_from_black(img_mask_1)
     img_mask_1.save(buffered, format="PNG")
     im_bytes = buffered.getvalue()
 
-    return score_jaccard, score_dice, im_bytes
+    buffered = BytesIO()
+    img_mask_file_2 = img_content_change_mask_color_from_black(img_mask_file)
+    img_mask = Image.open(BytesIO(img_mask_file_2)).convert('RGBA')
+    img_mask.save(buffered, format="PNG")
+    im2_bytes = buffered.getvalue()
+
+    return score_jaccard, score_dice, im_bytes, im2_bytes
 
 
 def get_polygons_from_img_mask(image_file, type='name'):
@@ -141,7 +205,9 @@ def get_polygons_from_img_mask(image_file, type='name'):
     mask = np.array(pim)
 
     segmentations = _get_polygons_from_mask(mask)
-    segmentations = [x for idx,x in enumerate(segmentations) if len(x) > 0 and idx == 0]
+    #print(segmentations)
+    #segmentations = [x for idx, x in enumerate(segmentations) if len(x) > 0 and idx == 0]
+    segmentations = [x for idx, x in enumerate(segmentations) if len(x) > 0]
 
     if type == 'name':
         buffered = BytesIO()
