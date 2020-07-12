@@ -62,6 +62,8 @@ $( document ).ready(function() {
                   $('#base64_img_mask').val(data.image_base64_freelabel);
                   $('#score').text(data.score + ' ' + data.score_3);
                   $('#scores').val(data.score + ';' + data.score_3);
+                  $('#ts_diff').val(data.ts_diff);
+                  //alert(data.ts_diff);
                   //$('#save_msg').text('Saved');
                   //setTimeout(hideSavedMsg, 1000);
                 }

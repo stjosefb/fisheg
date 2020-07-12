@@ -12,6 +12,7 @@ import json
 import os
 import requests
 import base64
+import time
 
 import annotate.lib_mask as lib_mask
 
@@ -131,6 +132,7 @@ def save(request):
     score = request.POST['scores']
     polygon_segmentations = request.POST['polygon_segmentations']
     base64_img_mask = request.POST['base64_img_mask']
+    ts_diff = request.POST['ts_diff']
     is_ref_dataset = False
     if 'refdataset' in request.POST:
         is_ref_dataset = True
@@ -157,7 +159,8 @@ def save(request):
                 data['imagemask'] = base64_img_mask
                 data[annot_method] = {
                     'shapes': list_seg,
-                    'classes': list_cats
+                    'classes': list_cats,
+                    'ts_diff': ts_diff
                 }
             elif annot_method == 'imagemask':
                 data['default'] = list_seg
@@ -311,7 +314,10 @@ def grow_refine_traces(request):
 
     # request
     url = 'http://localhost:9000/freelabel/refine2/'
+    ts_1 = time.time()
     r = requests.post(url, data=payload)
+    ts_2 = time.time()
+    ts_diff = ts_2 - ts_1
 
     # # reference annotation
     # annot_src = ''
@@ -368,6 +374,7 @@ def grow_refine_traces(request):
         "score_3": score_dice,
         "image_base64_freelabel": uri_img_mask_freelabel,
         "image_base64_ref": uri_img_mask_ref,
-        "polygon_segmentations": segmentation
+        "polygon_segmentations": segmentation,
+        "ts_diff": ts_diff
     }
     return JsonResponse(response)
