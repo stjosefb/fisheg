@@ -131,7 +131,7 @@ def score_against_ref_by_img_content(image_info_file, base_annot_file, img_conte
         if annot_obj['method'] == 'imagemask':
             encoded_elmts_img_reg = annot_src.split(',', 1)
             img_content_ref = base64.decodebytes(encoded_elmts_img_reg[1].encode('ascii'))
-            score_jaccard, score_dice, img_mask_1, img_mask_2 = annot_img_content_mask_compare(img_content_ref, img_content, invert=True)
+            score_jaccard, score_dice, img_mask_1, img_mask_2 = annot_img_content_mask_compare(img_content_ref, img_content, invert=False)
         else:  # method == 'default'
             score_jaccard, score_dice, img_mask_1, img_mask_2 = annot_polygon_compare_img_content_mask(img_file, annot_src, img_content)
 
@@ -157,15 +157,23 @@ def annot_img_content_mask_compare(img_mask_file_1, img_mask_file_2, invert=Fals
         mask2 = np.invert(mask2)
     mask2 = mask2.astype(int)
     mask2 = mask2.reshape(img_mask_2.width * img_mask_2.height)
+    nonwhite_idxs = np.where(mask1 != 255)[0]
+    mask1[nonwhite_idxs] = 0
+    nonwhite_idxs = np.where(mask2 != 255)[0]
+    mask2[nonwhite_idxs] = 0
+    print(mask1)
+    print(mask2)
     score_jaccard, score_dice = _score_mask_similarity(mask1, mask2)
 
     buffered = BytesIO()
     img_mask_1.save(buffered, format="PNG")
     im_bytes = buffered.getvalue()
 
-    img_mask_2_invert = ImageOps.invert(img_mask_2)
+    #img_mask_2_invert = ImageOps.invert(img_mask_2)
+    #img_mask_file_2 = img_content_change_mask_color_from_black(img_mask_file_2)
+    img_mask_2b = Image.open(BytesIO(img_mask_file_2)).convert('RGBA')
     buffered = BytesIO()
-    img_mask_2_invert.save(buffered, format="PNG")
+    img_mask_2b.save(buffered, format="PNG")
     im_bytes2 = buffered.getvalue()
 
     return score_jaccard, score_dice, im_bytes, im_bytes2

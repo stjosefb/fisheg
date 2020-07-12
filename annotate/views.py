@@ -248,7 +248,7 @@ def check_score(request):
                                                                               , invert=True)
             else:
                 annot_check = json.loads(annot)
-                score, score2, _ = lib_mask.annot_polygon_compare_img_content_mask(
+                score, score2, _, _ = lib_mask.annot_polygon_compare_img_content_mask(
                     img_file, annot_check, img_content_mask_1, invert=True
                 )
 
