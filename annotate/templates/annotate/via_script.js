@@ -1270,6 +1270,7 @@ function pack_via_metadata(return_type) {
                  region.shape_attributes['name'] === 'circle' ||
                  region.shape_attributes['name'] === 'ellipse' ||
                  region.shape_attributes['name'] === 'polygon' ||
+                 region.shape_attributes['name'] === 'polyline' ||
                  region.shape_attributes['name'] === 'point' ) {
               var annotation = via_region_shape_to_coco_annotation(region.shape_attributes);
               var attr_val;
@@ -1365,6 +1366,7 @@ function via_region_shape_to_coco_annotation(shape_attributes) {
     annotation['area'] = annotation['bbox'][2] * annotation['bbox'][3];
     break;
 
+  case 'polyline':
   case 'polygon':
     annotation['segmentation'] = [];
     var x0 = +Infinity;
@@ -3890,6 +3892,7 @@ function _via_reg_canvas_keydown_handler(e) {
         if ( _via_current_shape === VIA_REGION_SHAPE.POLYLINE ||
              _via_current_shape === VIA_REGION_SHAPE.POLYGON) {
           _via_polyshape_finish_drawing();
+          annotation_editor_show();
         }
     }
     if ( e.key === 'Backspace' ) {

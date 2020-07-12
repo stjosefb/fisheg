@@ -157,13 +157,13 @@ def annot_img_content_mask_compare(img_mask_file_1, img_mask_file_2, invert=Fals
         mask2 = np.invert(mask2)
     mask2 = mask2.astype(int)
     mask2 = mask2.reshape(img_mask_2.width * img_mask_2.height)
-    nonwhite_idxs = np.where(mask1 != 255)[0]
-    mask1[nonwhite_idxs] = 0
-    nonwhite_idxs = np.where(mask2 != 255)[0]
-    mask2[nonwhite_idxs] = 0
+    white_idxs = np.where(mask1 == 255)[0]
+    mask1[white_idxs] = 0
+    white_idxs = np.where(mask2 == 255)[0]
+    mask2[white_idxs] = 0
     print(mask1)
     print(mask2)
-    score_jaccard, score_dice = _score_mask_similarity(mask1, mask2)
+    score_jaccard, score_dice = _score_mask_similarity(mask1, mask2, invert=True)
 
     buffered = BytesIO()
     img_mask_1.save(buffered, format="PNG")
@@ -267,16 +267,27 @@ def _get_mask_from_polygon_by_img(img, annot):
     return mask, img_mask
 
 
-def _score_mask_similarity(mask1, mask2):
+def _score_mask_similarity(mask1, mask2, invert=False):
     mask_and = np.logical_and(mask1, mask2)
     #print(np.count_nonzero(mask_and))
     mask_or = np.logical_or(mask1, mask2)
     #print(np.count_nonzero(mask_or))
+    #if invert:
+    #    mask_and = mask_and == 0
+    #    mask_or = mask_or == 0
+    #    mask1 = mask1 == 0
+    #    mask2 = mask2 == 0
     n_intersect = np.count_nonzero(mask_and)
     n_union = np.count_nonzero(mask_or)
+    #if n_union != 0:
     jaccard = n_intersect / n_union
+    #else:
+    #    jaccard = 0
     #iou2 = np.count_nonzero(mask1) / n_union
+    #if np.count_nonzero(mask1) + np.count_nonzero(mask2) != 0:
     dice = (2 * n_intersect) / (np.count_nonzero(mask1) + np.count_nonzero(mask2))
+    #else:
+    #    dice = 0
     return jaccard, dice
 
 
