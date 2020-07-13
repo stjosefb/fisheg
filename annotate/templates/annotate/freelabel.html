@@ -85,7 +85,7 @@ $( document ).ready(function() {
         {% for seg in list_seg %}
         region = {
                 'shape_attributes': {
-                    'name': 'polygon', 'all_points_x': [ {{ seg.x }} ], 'all_points_y': [ {{ seg.y }} ]
+                    'name': 'polyline', 'all_points_x': [ {{ seg.x }} ], 'all_points_y': [ {{ seg.y }} ]
                 },
                 'region_attributes': { "class": "{{ seg.category }}" }
             };

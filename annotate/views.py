@@ -18,10 +18,7 @@ import annotate.lib_mask as lib_mask
 
 
 def index(request, list_seg_in=None, method='GET', data={}):
-    # return HttpResponse("Hello, world. You're at the annotation index.")
-    #message = ''
-    #if 'message' in request.GET:
-    #    message = request.GET['message']
+    # params
     if method == 'POST':
         input_req = request.POST
     else:
@@ -33,11 +30,15 @@ def index(request, list_seg_in=None, method='GET', data={}):
     dataset = input_req['dataset']
     data_id = input_req['data_id']
 
-    #annot_method = input_req['method'] if 'method' in input_req else 'default'
     if 'method' in input_req:
         annot_method = input_req['method']
     else:
         annot_method = ''
+
+    # init
+    score_jaccard = None
+    score_dice = None
+    annot = None
 
     # get image
     image_info_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS,
@@ -92,6 +93,8 @@ def index(request, list_seg_in=None, method='GET', data={}):
                     else:
                         seg = {'x': str_list_x, 'y': str_list_y}
                     list_seg.append(seg)
+                score_jaccard = annot['score_jaccard']
+                score_dice = annot['score_dice']
         except FileNotFoundError:
             pass
     else:
@@ -114,6 +117,10 @@ def index(request, list_seg_in=None, method='GET', data={}):
         'method': annot_method if annot_method != '' else 'default'
         # 'message': message
     }
+    if annot:
+        if annot_method == annot['method']:
+            if score_jaccard is not None and score_dice is not None:
+                context['score'] = score_jaccard + ' ' + score_dice
     if data:
         context.update(data)
     if 'showRegion' not in context:
