@@ -24,6 +24,7 @@ $( document ).ready(function() {
 
             var list_seg = [];
             var list_ctg = [];
+            var list_shape = [];
             for (i=0; i<obj.annotations.length; i++) {
                 var seg = '';
                 //console.log(obj.annotations);
@@ -35,12 +36,15 @@ $( document ).ready(function() {
                 if (dict_categories.hasOwnProperty(obj.annotations[i].category_id)) {
                     list_ctg.push(dict_categories[obj.annotations[i].category_id]);
                 }
+                shape = obj.annotations[i].shape;
+                list_shape.push(shape);
             }
 
             //console.log(obj.annotations[0].segmentation);
             //console.log(seg);
             $('input[name="annot"]').val(JSON.stringify(list_seg));
             $('input[name="categories"]').val(JSON.stringify(list_ctg));
+            $('input[name="shapes"]').val(JSON.stringify(list_shape));
 
             //$('input[name="class"]').val(JSON.stringify(list_class));
 

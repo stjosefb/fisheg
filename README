@@ -1,17 +1,102 @@
+===
+cari problem dan solusi anotasi freelabel pada dataset ikan agar efisien.
+contrib:
+freelabel for fish dataset: persentase, banyak coretan, waktu, dsb.
+numsets=1 (time, persentase)
+numsets=8 with multiprocessing reduced time (time, persentase)
+refine trace (time, persentase)
+crop/zoom (time, persentase)
+
+trace as polyline (kemudahan diubah/dihapus)?
+rgr: snic without queue
+rgr: using other modified snic 
+similar trace method
+===
+
+===
+joblib
+
+===
+
+===
+mp
+git clone freelabel freelabelmp
+virtualenv .
+
+notes:
+openmp
+===
+
+
+===
+thesis notes
+
+edit freelabel:
+D:\Works\freelabel_edit
+D:\Works\freelabel_edit\freelabel\views.py
+
+general:
+- (initanns2)
+  buat array anotasi: array numpy 2 dimensi sejumlah panjang x lebar gambar (contoh 512x512), diisi nol, simpan sebagai file mask (static/'+username+'/lastmask.npy)
+- (drawTrace & ourLib.tracePolyline) 
+  ambil nilai parameter trace[], gambarkan polylines di array anotasi, warna sesuai kategori, menggunakan fungsi polylines opencv2
+  format sebuah trace (polyline): x1,y1,size,kategori,x2,y2,size,kategori,...
+- buka url gambar, jadikan sebagai array numpy 1 dimensi (array of bytes sesuai format image)
+- (*startRGR*) lakukan RGR dengan argumen utamanya berupa array image dan array anotasi, file mask akan berubah
+- buka file mask, kirim sebagai response
+
+startRGR:
+- array bytes diubah ke nilai image. hasilnya array 3 dimensi, x(width);y(height);color(BGR) (contoh 512x512x3)
+- *main*, dengan argumen utamanya berupa array image dan array anotasi
+- return im_color array 3 dimensi, x(width);y(height);color(BGRA) (contoh 512x512x4). background(transparent)=(255 255 255 0) foreground/fish(solid)=(0 0 128 255)
+- simpan im_color ke file mask
+
+main:
+- resize array image kalau berbeda ukurannya dengan array anotasi
+- ekstrak array r, g, dan b dari array image. masing-masing merupakan array 1 dimensi berukuran width*height
+- Rectangular Kernel - equal to strel in matlab
+- load PASCAL color map. numpy array (256,1,3). mewakili warna dari 256 kelas Pascal (contoh: background - hitam, aeroplace - merah, bicycle - hijau, ...)
+- buat kernel persegi ukuran 80x80 SE = cv.getStructuringElement(cv.MORPH_RECT, (80, 80))  # used for identifying far background 
+- tentukan daftar kelas dan jumlahnya, berdasarkan anotasi (tidak termasuk kelas background)
+- buat numpy array 3 dimensi berukuran width*height*jumlah kelas, untuk menyimpan mask dari tiap foreground kelas, awalnya 0 semua
+- anotasi dipindahkan ke array mask ini. coretan di sebuah foreground kelas dimasukkan ke layer mask yang terkait dengan nilai 1.
+- buat np array preseg (mask dari pixel yang teranotasi, mengabaikan kelas) width*height, tiap coretan trace foreground memiliki nilai 2 (menyatakan pixel dengan high confidence), sisanya 0
+- buat np array ROI, sama dengan preseg
+- hitung jumlah pixel high confidence
+- buat array 1 dimensi dari ROI dengan style Fortran (mulai kolom 1 dst)
+- array R_H berisi indeks dari array ROI yang memiliki nilai > 0
+- hitung jumlah sampel: jumlah high confident pixel dibagi 1.33 (cellSize)
+- buat array 1 dimensi dari preseg dengan style default/C (mulai baris 1 dst)
+- refcls adalah matrix scoremap 2 dimensi untuk setiap iterasi, berukuran (weight*height*jumlahkelas)*8 (8=numsets, number of seeds sets (samplings))
+- multiprocessing regGrowing
+- 
+===
+
 ====
 todo
 
+fish table: false positive, false negative, tambahan stroke latar belakang, tambahan stroke ikan, persen akhir
+mendefinisikan praktek2 yang perlu diperhatikan dalam menjalankan metode freelabel untuk kasus di dalam tesis atau kasus serupa
+
+size of remainders
+refine zoom
+compare: bounding box, rectangle, edge
+
+zoom
+crop image
+partial refine traces
+test for many images programatically
 summary
-overlay mask
-polyline
-category pop up
+v overlay mask
+v polyline
+v category pop up
 polygon color
 no overlay when selected
 select by line
-image mask method
+v image mask method
 multi user
-base score depends on method of base annotation
-record time
+v base score depends on method of base annotation
+v record time
 ====
 
 =========
@@ -33,6 +118,41 @@ python manage.py runserver 0.0.0.0:9000
 http://localhost:9000/freelabel/
 ^C
 deactivate
+
+chmod 666 freelabel/ourLib.py freelabel/views.py
+cp /mnt/d/Works/freelabel_edit/freelabel/ourLib.py freelabel/
+cp /mnt/d/Works/freelabel_edit/freelabel/views.py freelabel/
+C:\Users\Jos\AppData\Local\Packages\CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc\LocalState\rootfs\home\josef\anntools\freelabel\freelabel
+D:\Works\freelabel_edit\freelabel
+---
+
+---
+install:
+README.md
+FreeLabel_api/settings.py
+ALLOWED_HOSTS = ['localhost','142.93.169.91']
+=====
+
+===
+d:
+cd D:\Works\freelabel_edit
+D:\Users\Jos\.virtualenv\freelabel\Scripts\activate.bat
+pip install -r requirements.txt
+	- cd freelabel
+	- python setup.py build_ext --inplace
+	- cd ..
+---
+run 
+
+d:
+cd D:\Works\freelabel_edit
+D:\Users\Jos\.virtualenv\freelabel\Scripts\activate.bat
+python manage.py runserver 0.0.0.0:9000
+
+===
+
+
+
 ===
 run
 
@@ -40,11 +160,25 @@ anaconda prompt
 d:
 cd D:\Users\Jos\Projects\fisheg 
 D:\Users\Jos\.virtualenv\djangodev\Scripts\activate.bat
-python manage.py runserver 8000
+python manage.py runserver 0.0.0.0:8000
 http://127.0.0.1:8000
 ^C
 deactivate
 
+---
+install
+
+virtualenv -p python3 /home/josef/.virtualenv/djangodev
+source /home/josef/.virtualenv/djangodev/bin/activate
+pip install Django
+pip install Pillow
+pip install requests
+pip install numpy
+pip install scikit-image
+pip install shapely
+ufw status
+sudo ufw allow 8009
+python manage.py runserver 8009
 ====
 
 ===

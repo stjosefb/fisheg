@@ -28,7 +28,7 @@
             <option value="default">Default (VIA)</option>
             <option value="imagemask">Upload Image Mask</option>
             {# <option value="bylabel" disabled>ByLabel</option> #}
-            <option value="freelabel">FreeLabel</option>
+            <option value="freelabel" selected>FreeLabel</option>
             {# <option value="maskrcnn" disabled>Utilizing Mask R-CNN</option> #}
         </select>
     </div>
@@ -44,6 +44,7 @@
                 {% endif %}
                 <input type="hidden" name="annot">
                 <input type="hidden" name="categories">
+                <input type="hidden" name="shapes">
                 <input type="hidden" id="polygon_segmentations" name="polygon_segmentations">
                 <input type="hidden" id="base64_img_mask" name="base64_img_mask">
                 <input type="hidden" id="scores" name="scores">
@@ -81,7 +82,7 @@
 
 
 <script>
-function changeMethod() {.6
+function changeMethod() {
     console.log(changeMethod);
     var method = $('#annotMethod').val();
     {% if is_ref_dataset %}

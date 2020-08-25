@@ -89,7 +89,22 @@ def index(request, list_seg_in=None, method='GET', data={}):
                     str_list_x = ','.join(list_x)
                     str_list_y = ','.join(list_y)
                     if annot_method == 'freelabel':
-                        seg = {'x': str_list_x, 'y': str_list_y, 'category': annot[annot_method]['classes'][key]}
+                        if 'trace_types' in annot[annot_method]:
+                            shape = annot[annot_method]['trace_types'][key]
+                        else:
+                            shape = 'polyline'
+                        seg = {
+                               'category': annot[annot_method]['classes'][key],
+                               'shape': shape
+                               }
+                        if shape == 'polyline' or shape == 'polygon':
+                            seg['x'] = str_list_x
+                            seg['y'] = str_list_y
+                        elif shape == 'rect':
+                            seg['x'] = region[0]
+                            seg['y'] = region[1]
+                            seg['width'] = region[2] - region[0]
+                            seg['height'] = region[-1] - region[1]
                     else:
                         seg = {'x': str_list_x, 'y': str_list_y}
                     list_seg.append(seg)
@@ -114,7 +129,7 @@ def index(request, list_seg_in=None, method='GET', data={}):
         #'list_x': str_list_x,
         #'list_y': str_list_y,
         'list_seg': list_seg,
-        'method': annot_method if annot_method != '' else 'default'
+        'method': annot_method if annot_method != '' else 'freelabel'
         # 'message': message
     }
     if annot:
@@ -135,6 +150,7 @@ def save(request):
     dataset = request.POST['dataset']
     annot = request.POST['annot']
     categories = request.POST['categories']
+    shapes = request.POST['shapes']
     annot_method = request.POST['method']
     score = request.POST['scores']
     polygon_segmentations = request.POST['polygon_segmentations']
@@ -156,6 +172,7 @@ def save(request):
     if (annot != ''):
         list_seg = json.loads(annot)
         list_cats = json.loads(categories)
+        list_trace_types = json.loads(shapes)
         if len(list_seg) > 0:
             data = {}
 
@@ -166,6 +183,7 @@ def save(request):
                 data['imagemask'] = base64_img_mask
                 data[annot_method] = {
                     'shapes': list_seg,
+                    'trace_types': list_trace_types,
                     'classes': list_cats,
                     'ts_diff': ts_diff
                 }
@@ -321,6 +339,7 @@ def grow_refine_traces(request):
 
     # request
     url = 'http://localhost:9000/freelabel/refine2/'
+    #url = 'http://142.93.169.91:9000/freelabel/refine2/'
     ts_1 = time.time()
     r = requests.post(url, data=payload)
     ts_2 = time.time()

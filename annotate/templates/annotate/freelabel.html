@@ -5,6 +5,13 @@
 <form action="grow_refine_traces" id="form_traces" method="POST" enctype="application/x-www-form-urlencoded">
     {% csrf_token %}
 
+    Region Shape:
+    <select id="traceShape" onchange="changeTraceShape()">
+        <option value="polyline" selected>Polyline</option>
+        <option value="polygon">Polygon</option>
+        <option value="rect">Rectangle</option>
+    </select>
+
     <input type="hidden" value="{{data_id}}" name="data_id">
     <input type="hidden" value="{{dataset}}" name="dataset">
 
@@ -45,6 +52,16 @@
 {% include "annotate/via_script.js" %}
 </script>
 <script>
+function changeTraceShape() {
+    //console.log(changeMethod);
+    var shape = $('#traceShape').val();
+    select_region_shape(shape);
+    /*if (shape == 'polyline') {
+        select_region_shape('polyline');
+    } else if (shape == 'polygon') {
+    } else if (shape == 'rectangle') {
+    }*/
+}
 $( document ).ready(function() {
     _via_init();
     var input = { 'url': { 'value':'{{ image_url }}' }};
@@ -85,7 +102,13 @@ $( document ).ready(function() {
         {% for seg in list_seg %}
         region = {
                 'shape_attributes': {
-                    'name': 'polyline', 'all_points_x': [ {{ seg.x }} ], 'all_points_y': [ {{ seg.y }} ]
+
+                    'name': '{{ seg.shape }}',
+                    {% if seg.shape == 'polyline' or seg.shape == 'polygon'  %}
+                        'all_points_x': [ {{ seg.x }} ], 'all_points_y': [ {{ seg.y }} ]
+                    {% elif seg.shape == 'rect' %}
+                        'x': {{ seg.x }}, 'y': {{ seg.y }}, 'width': {{ seg.width }}, 'height': {{ seg.height }}
+                    {% endif %}
                 },
                 'region_attributes': { "class": "{{ seg.category }}" }
             };

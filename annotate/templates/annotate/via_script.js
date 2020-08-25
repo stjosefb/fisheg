@@ -1304,7 +1304,7 @@ function pack_via_metadata(return_type) {
 }
 
 function via_region_shape_to_coco_annotation(shape_attributes) {
-  var annotation = { 'segmentation':[], 'area':[], 'bbox':[], 'iscrowd':0 };
+  var annotation = { 'segmentation':[], 'area':[], 'bbox':[], 'iscrowd':0, 'shape': shape_attributes['name']};
 
   switch(shape_attributes['name']) {
   case 'rect':
