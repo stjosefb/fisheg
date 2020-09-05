@@ -26,6 +26,7 @@
     <input type="hidden" value="{{image_height}}" name="img_size[]">
     <input type="hidden" value="9" name="weight">
     <input type="hidden" value="1" name="m">
+    <input type="hidden" value="" name="border">
     {# <input type="hidden" name="trace[]"> #}
     <button>Grow traces</button>
 </form>
@@ -74,6 +75,8 @@ $( document ).ready(function() {
     $('#attribute_type').val('radio').trigger('change');
     $('#_via_attribute_new_option_id').val('background').trigger('change');
     $('#_via_attribute_new_option_id').val('fish').trigger('change');
+    $('#_via_attribute_new_option_id').val('background_border').trigger('change');
+    $('#_via_attribute_new_option_id').val('ignore').trigger('change');
 
     $("#_via_attribute_option_default_fish").prop("checked", true).trigger("change");
 

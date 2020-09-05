@@ -322,13 +322,15 @@ def grow_refine_traces(request):
     # input params
     dataset = request.POST['dataset']
     data_id = request.POST['data_id']
+    border = request.POST.get('border', '')
 
     # payload
     payload = {
         'img': request.POST['img'],
         'ID': request.POST['ID'],
         'weight': request.POST['weight'],
-        'm': request.POST['m']
+        'm': request.POST['m'],
+        'border': border
     }
     img_sizes = request.POST.getlist('img_size[]')
     #for img_size in img_sizes:

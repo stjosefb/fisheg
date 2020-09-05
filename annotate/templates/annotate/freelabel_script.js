@@ -11,6 +11,8 @@ $( document ).ready(function() {
         $('#img_result_2').hide();
 
         pack_via_metadata('coco').then( function(data) {
+            width = 2;
+            $('input[name="border"]').val('');
             //console.log(data);
             var hstr = data.join('');
             var obj = JSON.parse(hstr);
@@ -28,18 +30,31 @@ $( document ).ready(function() {
                 for (j=0; j<obj.annotations[i].segmentation.length; j=j+2) {
                     arr_trace_elmt.push(obj.annotations[i].segmentation[j]);
                     arr_trace_elmt.push(obj.annotations[i].segmentation[j+1]);
-                    arr_trace_elmt.push(2); // size
-                    arr_trace_elmt.push(obj.annotations[i].category_id); // category (color)
+                    arr_trace_elmt.push(width); // size
+                    if (obj.annotations[i].category_id == 3) {
+                        arr_trace_elmt.push(1); // as background
+                    } else {
+                        arr_trace_elmt.push(obj.annotations[i].category_id); // category (color)
+                    }
                 }
                 if ((obj.annotations[i].shape == 'rect') || (obj.annotations[i].shape == 'polygon')) {
                     arr_trace_elmt.push(obj.annotations[i].segmentation[0]);
                     arr_trace_elmt.push(obj.annotations[i].segmentation[1]);
-                    arr_trace_elmt.push(2); // size
-                    arr_trace_elmt.push(obj.annotations[i].category_id); // category (color)
+                    arr_trace_elmt.push(width); // size
+                    if (obj.annotations[i].category_id == 3) {
+                        arr_trace_elmt.push(1); // as background
+                    } else {
+                        arr_trace_elmt.push(obj.annotations[i].category_id); // category (color)
+                    }
                 }
                 trace = arr_trace_elmt.join();
                 //trace = obj.annotations[i].segmentation.join();
-                list_traces.push(trace);
+                if (obj.annotations[i].category_id != 4) {
+                    list_traces.push(trace);
+                }
+                if (obj.annotations[i].category_id == 3) {
+                    $('input[name="border"]').val(trace);
+                }
             }
             //console.log(list_traces);
 

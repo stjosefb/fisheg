@@ -149,6 +149,16 @@ cd D:\Works\freelabel_edit
 D:\Users\Jos\.virtualenv\freelabel\Scripts\activate.bat
 python manage.py runserver 0.0.0.0:9000
 
+---
+alt?
+cd D:\Users\Jos\.virtualenv
+python -m venv freelabelplus
+D:\Users\Jos\.virtualenv\freelabelplus\Scripts\activate.bat
+
+d:
+cd D:\Works\freelabel_edit
+D:\Users\Jos\.virtualenv\freelabelplus\Scripts\activate.bat
+python manage.py runserver 0.0.0.0:9000
 ===
 
 
