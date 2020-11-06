@@ -34,7 +34,7 @@
     </div>
 
     <div style="display: flex">
-        <div style="flex: 20%">
+        <div style="flex: 17%">
             <form action="save" id="form_save_annot" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <input type="hidden" value="{{data_id}}" name="data_id">
@@ -65,7 +65,7 @@
                 <span style='color: green; font-style: italic' id="score">{{ score }}</span>
             </form>
         </div>
-        <div style="flex: 60%">
+        <div style="flex: 63%">
             &nbsp;
         </div>
     </div>

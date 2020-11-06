@@ -38,6 +38,7 @@
 
 <div id="display_area" style="width: 50%; float: left">
     <div id="image_panel" class="display_area_content display_none">
+      <img id="img_result" class="visible" style="opacity: 0.5 !important">
         {# <img src="{{ image }}">  #}
         {# <img src="{{ image_url }}"> #}
         <canvas id="region_canvas" width="1" height="1" tabindex="1">Sorry, your browser does not support HTML5 Canvas functionality which is required for this application.</canvas>
@@ -45,7 +46,7 @@
 </div>
 
 <div id="right_area" style="float: right; width: 50%;">
-    <img id="img_result">
+    {# <img id="img_result"> #}
     <img id="img_result_2">
 </div>
 
@@ -75,8 +76,8 @@ $( document ).ready(function() {
     $('#attribute_type').val('radio').trigger('change');
     $('#_via_attribute_new_option_id').val('background').trigger('change');
     $('#_via_attribute_new_option_id').val('fish').trigger('change');
-    $('#_via_attribute_new_option_id').val('background_border').trigger('change');
-    $('#_via_attribute_new_option_id').val('ignore').trigger('change');
+    //$('#_via_attribute_new_option_id').val('background_border').trigger('change');
+    //$('#_via_attribute_new_option_id').val('ignore').trigger('change');
 
     $("#_via_attribute_option_default_fish").prop("checked", true).trigger("change");
 
