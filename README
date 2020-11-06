@@ -189,6 +189,20 @@ pip install shapely
 ufw status
 sudo ufw allow 8009
 python manage.py runserver 8009
+---
+install windows
+
+cd C:\Users\home\Documents\thesis\kode\fisheg
+pip install virtualenv
+virtualenv env
+env\Scripts\activate.bat
+pip install Django
+pip install Pillow
+pip install requests
+pip install numpy
+pip install scikit-image
+pip install shapely
+python manage.py runserver 8009
 ====
 
 ===
@@ -220,10 +234,12 @@ python manage.py startapp annotate
 python manage.py startapp annot_bylabel
 python manage.py startapp annot_freelabel
 python manage.py startapp annot_maskrcnn
-python manage.py startapp ref_dataset_mngp
+python manage.py startapp ref_dataset_mng
+python manage.py startapp class_mng
 
-
-
+{module}/urls.py
+fisheg/urls.py (add into urlpatterns)
+fisheg/settings.py (add into installed_apps)
 =======
 package
 

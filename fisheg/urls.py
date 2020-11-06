@@ -28,6 +28,7 @@ urlpatterns = [
     path('dataset_mng/', include('dataset_mng.urls')),
     path('image_mng/', include('image_mng.urls')),
     path('ref_dataset_mng/', include('ref_dataset_mng.urls')),
+    path('class_mng/', include('class_mng.urls')),
 ]
 
 urlpatterns += staticfiles_urlpatterns()

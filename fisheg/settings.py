@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'dataset_mng.apps.DatasetMngConfig',
     'image_mng.apps.ImageMngConfig',
     'ref_dataset_mng.apps.RefDatasetMngConfig',
+    'class_mng.apps.ClassMngConfig',
     'main.apps.MainConfig'
 ]
 
@@ -141,3 +142,4 @@ DIR_DATASETS_ANNOTATIONS = 'annotations'
 DIR_DATASETS_REFDATASETS = 'refdatasets'
 DIR_DATASETS_DELETED_REFDATASETS = '_refdatasets_deleted'
 
+FILENAME_DATASET_INFO = 'info.json'
