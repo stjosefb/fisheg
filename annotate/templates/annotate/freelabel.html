@@ -18,8 +18,10 @@
     <input type="hidden" value="{{ image_url }}" name="img">
     {% if is_ref_dataset %}
         <input type="hidden" value="{{dataset}}-{{ref_dataset}}-{{data_id}}" name="ID">
+        <input type="hidden" value="1" name="is_ref_dataset">
     {% else %}
         <input type="hidden" value="{{dataset}}--{{data_id}}" name="ID">
+        <input type="hidden" value="0" name="is_ref_dataset">
     {% endif %}
 
     <input type="hidden" value="{{image_width}}" name="img_size[]">
@@ -74,12 +76,16 @@ $( document ).ready(function() {
     document.getElementById('user_input_attribute_id').value = 'class';
     add_new_attribute_from_user_input();
     $('#attribute_type').val('radio').trigger('change');
-    $('#_via_attribute_new_option_id').val('background').trigger('change');
-    $('#_via_attribute_new_option_id').val('fish').trigger('change');
+    {% for cls in list_classes %}
+    $('#_via_attribute_new_option_id').val('{{ cls.name }}').trigger('change');
+    {% endfor %}
+    //$('#_via_attribute_new_option_id').val('background').trigger('change');
+    //$('#_via_attribute_new_option_id').val('fish').trigger('change');
     //$('#_via_attribute_new_option_id').val('background_border').trigger('change');
     //$('#_via_attribute_new_option_id').val('ignore').trigger('change');
 
-    $("#_via_attribute_option_default_fish").prop("checked", true).trigger("change");
+    $("#_via_attribute_option_default_background").prop("checked", true).trigger("change");
+    //$("#_via_attribute_option_default_fish").prop("checked", true).trigger("change");
 
     //
     var d = {};

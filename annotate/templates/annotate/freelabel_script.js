@@ -31,21 +31,21 @@ $( document ).ready(function() {
                     arr_trace_elmt.push(obj.annotations[i].segmentation[j]);
                     arr_trace_elmt.push(obj.annotations[i].segmentation[j+1]);
                     arr_trace_elmt.push(width); // size
-                    if (obj.annotations[i].category_id == 3) {
-                        arr_trace_elmt.push(1); // as background
-                    } else {
+                    //if (obj.annotations[i].category_id == 3) {
+                    //    arr_trace_elmt.push(1); // as background
+                    //} else {
                         arr_trace_elmt.push(obj.annotations[i].category_id); // category (color)
-                    }
+                    //}
                 }
                 if ((obj.annotations[i].shape == 'rect') || (obj.annotations[i].shape == 'polygon')) {
                     arr_trace_elmt.push(obj.annotations[i].segmentation[0]);
                     arr_trace_elmt.push(obj.annotations[i].segmentation[1]);
                     arr_trace_elmt.push(width); // size
-                    if (obj.annotations[i].category_id == 3) {
-                        arr_trace_elmt.push(1); // as background
-                    } else {
+                    //if (obj.annotations[i].category_id == 3) {
+                    //    arr_trace_elmt.push(1); // as background
+                    //} else {
                         arr_trace_elmt.push(obj.annotations[i].category_id); // category (color)
-                    }
+                    //}
                 }
                 trace = arr_trace_elmt.join();
                 //trace = obj.annotations[i].segmentation.join();

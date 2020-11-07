@@ -69,7 +69,7 @@ def remove_class(request):
         # modify
         info_content['classes'] = [x for x in info_content['classes'] if str(x['id']) != class_id]
         for idx, class_ in enumerate(info_content['classes']):
-            class_['id'] = idx+1
+            class_['id'] = idx+2
 
         # save
         os.remove(dataset_info_file)
@@ -114,7 +114,7 @@ def create_class(request):
             info_content = {'classes': []}
 
         # modify
-        new_class = {'id': len(info_content['classes'])+1, 'name': class_name, 'color': class_color}
+        new_class = {'id': len(info_content['classes'])+2, 'name': class_name, 'color': class_color}
         info_content['classes'].append(new_class)
 
         # save

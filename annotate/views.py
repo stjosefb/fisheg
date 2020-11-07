@@ -15,6 +15,7 @@ import base64
 import time
 
 import annotate.lib_mask as lib_mask
+import annotate.lib_class as lib_class
 
 
 def index(request, list_seg_in=None, method='GET', data={}):
@@ -115,6 +116,8 @@ def index(request, list_seg_in=None, method='GET', data={}):
     else:
         list_seg = list_seg_in
 
+    list_classes = lib_class.get_annot_classes(dataset)
+
     # display
     template = loader.get_template('annotate/index.html')
     # subfolders = [f.name for f in os.scandir(settings.BASE_DATASETS_PATH) if f.is_dir()]
@@ -129,7 +132,8 @@ def index(request, list_seg_in=None, method='GET', data={}):
         #'list_x': str_list_x,
         #'list_y': str_list_y,
         'list_seg': list_seg,
-        'method': annot_method if annot_method != '' else 'freelabel'
+        'method': annot_method if annot_method != '' else 'freelabel',
+        'list_classes': list_classes
         # 'message': message
     }
     if annot:
@@ -322,6 +326,7 @@ def grow_refine_traces(request):
     # input params
     dataset = request.POST['dataset']
     data_id = request.POST['data_id']
+    is_ref_dataset = request.POST['is_ref_dataset']
     border = request.POST.get('border', '')
 
     # payload
@@ -340,8 +345,8 @@ def grow_refine_traces(request):
     payload['trace[]'] = traces
 
     # request
-    url = 'http://localhost:9000/freelabel/refine2/'
-    #url = 'http://142.93.169.91:9000/freelabel/refine2/'
+    #url = 'http://localhost:9000/freelabel/refine2/'
+    url = 'http://142.93.169.91:9000/freelabel/refine2/'
     ts_1 = time.time()
     r = requests.post(url, data=payload)
     ts_2 = time.time()
@@ -373,11 +378,18 @@ def grow_refine_traces(request):
     # score_jaccard, score_dice, img_mask_1 = lib_mask.annot_polygon_compare_img_content_mask(img_file, annot_src, r.content)
 
     # scoring
-    image_info_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS,
-                                data_id + '.json'])
-    polygon_annot_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS,
-                                   data_id + '.json'])
-    score_jaccard, score_dice, img_mask_1, img_mask_2 = lib_mask.score_against_ref_by_img_content(image_info_file, polygon_annot_file, r.content)
+    if is_ref_dataset == '1':
+        image_info_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_INFOS,
+                                    data_id + '.json'])
+        polygon_annot_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS,
+                                       data_id + '.json'])
+        score_jaccard, score_dice, img_mask_1, img_mask_2 = lib_mask.score_against_ref_by_img_content(image_info_file, polygon_annot_file, r.content)
+    else:
+        #img_mask_1 = lib_mask.score_against_ref_by_img_content(r.content)
+        img_mask_2 = r.content
+        img_mask_1 = img_mask_2
+        score_jaccard = 0
+        score_dice = 0
 
     # image mask: freelabel
     uri_img_mask_freelabel = ("data:" +
@@ -390,8 +402,11 @@ def grow_refine_traces(request):
            "base64," + base64.b64encode(img_mask_1).decode('ascii'))
 
     # image mask to polygons
-    segmentation = lib_mask.get_polygons_from_img_mask(r.content, type="content")
+    if is_ref_dataset == '1':
+        segmentation = lib_mask.get_polygons_from_img_mask(r.content, type="content")
     #print(segmentation)
+    else:
+        segmentation = []
 
     # response
     response = {
@@ -403,6 +418,7 @@ def grow_refine_traces(request):
         "image_base64_freelabel": uri_img_mask_freelabel,
         "image_base64_ref": uri_img_mask_ref,
         "polygon_segmentations": segmentation,
-        "ts_diff": ts_diff
+        "ts_diff": ts_diff,
+        "test": str(r.content)
     }
     return JsonResponse(response)
