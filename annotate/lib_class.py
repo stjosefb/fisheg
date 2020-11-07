@@ -28,5 +28,7 @@ def get_annot_classes(dataset):
     # init info_content if file not exist
     if info_content is not None:
         list_classes.extend(info_content['classes'])
+    else:
+        list_classes.append({'id': 2, 'name': 'fish', 'color': '#550000'})
 
     return list_classes

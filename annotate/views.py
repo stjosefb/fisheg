@@ -109,8 +109,8 @@ def index(request, list_seg_in=None, method='GET', data={}):
                     else:
                         seg = {'x': str_list_x, 'y': str_list_y}
                     list_seg.append(seg)
-                score_jaccard = annot['score_jaccard']
-                score_dice = annot['score_dice']
+                score_jaccard = annot['score_jaccard'] if 'score_jaccard' in annot else '0'
+                score_dice = annot['score_dice'] if 'score_jaccard' in annot else '0'
         except FileNotFoundError:
             pass
     else:
@@ -385,7 +385,7 @@ def grow_refine_traces(request):
                                        data_id + '.json'])
         score_jaccard, score_dice, img_mask_1, img_mask_2 = lib_mask.score_against_ref_by_img_content(image_info_file, polygon_annot_file, r.content)
     else:
-        #img_mask_1 = lib_mask.score_against_ref_by_img_content(r.content)
+        #img_mask_2 = lib_mask.binary_(r.content)
         img_mask_2 = r.content
         img_mask_1 = img_mask_2
         score_jaccard = 0
