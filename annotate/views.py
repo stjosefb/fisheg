@@ -339,7 +339,7 @@ def grow_refine_traces(request):
     }
     img_sizes = request.POST.getlist('img_size[]')
     #for img_size in img_sizes:
-    payload['img_size[]'] = img_sizes
+    payload['img_size[]'] = [img_sizes[1],img_sizes[0]]
     traces = request.POST.getlist('trace[]')
     #for trace in traces:
     payload['trace[]'] = traces
