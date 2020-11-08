@@ -12,4 +12,5 @@ urlpatterns = [
     path('remove_data', views.remove_data, name='remove_data'),
     #path('upload_file', views.upload_file, name='upload_file'),
     #path('remove_file', views.remove_file, name='remove_file'),
+    path('export_mscoco', views.export_mscoco, name='export_mscoco'),
 ]
