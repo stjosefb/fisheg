@@ -49,12 +49,12 @@ $( document ).ready(function() {
                 }
                 trace = arr_trace_elmt.join();
                 //trace = obj.annotations[i].segmentation.join();
-                if (obj.annotations[i].category_id != 4) {
+                //if (obj.annotations[i].category_id != 4) {
                     list_traces.push(trace);
-                }
-                if (obj.annotations[i].category_id == 3) {
+                //}
+                /*if (obj.annotations[i].category_id == 3) {
                     $('input[name="border"]').val(trace);
-                }
+                }*/
             }
             //console.log(list_traces);
 

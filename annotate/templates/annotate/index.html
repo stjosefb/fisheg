@@ -62,7 +62,9 @@
                 <input type="hidden" name="annot">
                 <input type="hidden" name="method" value="{{ method }}">
                 <button id="btnScore">Score</button>
+                {% if is_ref_dataset == True %}
                 <span style='color: green; font-style: italic' id="score">{{ score }}</span>
+                {% endif %}
             </form>
         </div>
         <div style="flex: 63%">

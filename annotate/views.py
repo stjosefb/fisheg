@@ -418,7 +418,6 @@ def grow_refine_traces(request):
         "image_base64_freelabel": uri_img_mask_freelabel,
         "image_base64_ref": uri_img_mask_ref,
         "polygon_segmentations": segmentation,
-        "ts_diff": ts_diff,
-        "test": str(r.content)
+        "ts_diff": ts_diff
     }
     return JsonResponse(response)
