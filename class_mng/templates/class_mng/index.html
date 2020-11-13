@@ -15,7 +15,7 @@
         <ul>
         {% for kelas in class_list %}
             <li>
-                <a href="javascript:updateKelas('{{ kelas.id }}','{{ kelas.name }}','{{ kelas.color }}')">{{ kelas.name }}</a> {{ kelas.color }}
+                <a href="javascript:updateKelas('{{ kelas.id }}','{{ kelas.name }}','{{ kelas.color }}')">{{ kelas.name }}</a>
                 <button type="button" onclick="removeKelas('{{ kelas.id }}')">Remove</button>
             </li>
         {% endfor %}
@@ -30,7 +30,7 @@
     <input type="hidden" name="dataset" value="{{ dataset }}">
     <input type="hidden" id="class_id_upd" name="class_id" value="">
     Name:<input type="text" id="class_name_upd" name="class_name"><br/>
-    Color:<input type="text" id="class_color_upd" name="class_color"><br/>
+    <!--Color:--><input type="text" id="class_color_upd" name="class_color" style="display:none"><!--<br/>-->
     <button type="submit">Modify class</button>
     <button type="button" onclick="cancelUpdate()">Cancel</button>
 </form>
@@ -39,7 +39,7 @@
     {% csrf_token %}
     <input type="hidden" name="dataset" value="{{ dataset }}">
     Name:<input type="text" name="class_name"><br/>
-    Color:<input type="text" name="class_color"><br/>
+    <!--Color:--><input type="text" name="class_color" style="display:none"><!--<br/>-->
     <button type="submit">Create class</button>
 </form>
 <p><em>{{ message }}</em></p>
