@@ -99,6 +99,13 @@ v base score depends on method of base annotation
 v record time
 ====
 
+
+===
+custom image:
+http://localhost:9000/freelabel/annotate/
+D:\Works\freelabel_edit\static\annot\1
+===
+
 =========
 freelabel
 
@@ -110,6 +117,15 @@ vi /etc/ssh/sshd_config
 AllowUsers josef
 PasswordAuthentication yes
 service ssh start
+
+DisallowedHost
+
+cd /home/josef/anntools/freelabel_edit
+source ./bin/activate
+python manage.py runserver 0.0.0.0:9000
+http://localhost:9000/freelabel/
+^C
+deactivate
 
 
 cd /home/josef/anntools/freelabel
@@ -142,7 +158,7 @@ pip install -r requirements.txt
 	- python setup.py build_ext --inplace
 	- cd ..
 ---
-run 
+run (anaconda prompt)
 
 d:
 cd D:\Works\freelabel_edit
