@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Zoom</title>
+    <script src="/static/js/wheelzoom.js"></script>
+    <script src="/static/js/jquery-3.4.1.min.js"></script>
+
+</head>
+
+<body onload="loadZoom();">
+
+<div id="display_area" style="float: left">
+    <div id="image_panel" class="" style="">
+        <img src="{{ image_url }}" id="img_src"  class="visible">
+        <img src="{{ image_mask_url }}" id="img_result" class="visible" style="opacity: 0.5 !important" oncontextmenu="return false;">
+        <!--<canvas id="myCanvas"></canvas>-->
+    </div>
+</div>
+
+
+
+
+
+
+</body>
+
+<style>
+{% include "annotate/via_style.css" %}
+</style>
+
+<script>
+$( document ).ready(function() {
+    h = $(window).height() * 0.95;
+    w = h*{{image_prop}};
+    $('#image_panel').height(h);
+    $('#image_panel').width(w);
+
+    var canvas = document.createElement('canvas');
+
+    canvas.id = "CursorLayer";
+    canvas.width = w;
+    canvas.height = h;
+
+    var body = document.getElementById("image_panel");
+    body.appendChild(canvas);
+    $('#myCanvas').height(h);
+    $('#myCanvas').width(w);
+    //$('#img_src').height(h);
+    //$('#img_src').width(w);
+    //$('#img_src').show();
+
+    //var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#FF0000";
+    ctx.fillRect(10, 10, 150, 75);
+});
+function loadZoom() {
+    var zoomIn  = -100;
+    var zoomOut = 100;
+    images = wheelzoom(document.querySelectorAll('img'), {zoom: 0.1, maxZoom: -1});
+    //console.log(images.length);
+    images[1].addEventListener('wheelzoom.in', function(e) {
+        console.log(images.length);
+        images[0].doZoomIn();
+    });
+    images[1].addEventListener('wheelzoom.out', function(e) {
+        console.log('o');
+        images[0].doZoomOut();
+    });
+    images[1].addEventListener('wheelzoom.drag', function(e) {
+        console.log('d');
+        images[0].doDrag(e.detail.bgPosX, e.detail.bgPosY);
+    });
+}
+</script>
+</html>

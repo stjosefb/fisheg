@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'image_mng.apps.ImageMngConfig',
     'ref_dataset_mng.apps.RefDatasetMngConfig',
     'class_mng.apps.ClassMngConfig',
+    'annot_zoom.apps.AnnotZoomConfig',
     'main.apps.MainConfig'
 ]
 

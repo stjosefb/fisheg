@@ -203,6 +203,14 @@ pip install numpy
 pip install scikit-image
 pip install shapely
 python manage.py runserver 8009
+---
+run windows
+
+cd C:\Users\home\Documents\thesis\kode\fisheg
+env\Scripts\activate.bat
+python manage.py runserver 8009
+
+
 ====
 
 ===
@@ -236,6 +244,7 @@ python manage.py startapp annot_freelabel
 python manage.py startapp annot_maskrcnn
 python manage.py startapp ref_dataset_mng
 python manage.py startapp class_mng
+python manage.py startapp annot_zoom
 
 {module}/urls.py
 fisheg/urls.py (add into urlpatterns)
