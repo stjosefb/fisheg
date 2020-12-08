@@ -56,6 +56,12 @@ window.wheelzoom = (function(){
 		var cachedDataUrl;
 		var initBgPosX;
 		var initBgPosY;
+    var bgWidthPrev;
+    var bgHeightPrev; 
+		var bgPosXPrev;
+		var bgPosYPrev;    
+    var stackScale = [];
+    var stackTranslate = [];    
 
 		function setSrcToBackground(img) {
 			img.style.backgroundImage = 'url("'+img.src+'")';
@@ -66,18 +72,43 @@ window.wheelzoom = (function(){
 			img.src = cachedDataUrl;
 		}
 
-		function updateBgStyle() {
-			if (bgPosX > 0) {
-				bgPosX = 0;
-			} else if (bgPosX < width - bgWidth) {
-				bgPosX = width - bgWidth;
-			}
+		function updateBgStyle(mode) {      
+      if (bgPosX > 0) {
+        bgPosX = 0;
+      } else if (bgPosX < width - bgWidth) {
+        bgPosX = width - bgWidth;
+      }
 
-			if (bgPosY > 0) {
-				bgPosY = 0;
-			} else if (bgPosY < height - bgHeight) {
-				bgPosY = height - bgHeight;
-			}
+      if (bgPosY > 0) {
+        bgPosY = 0;
+      } else if (bgPosY < height - bgHeight) {
+        bgPosY = height - bgHeight;
+      }
+      if (mode < 0) {
+        stackScale.push([bgWidthPrev, bgHeightPrev]);
+        //console.log(bgWidth + ' in ' + bgHeight);
+        //console.log(bgPosX + ' in2 ' + bgPosY);
+        stackTranslate.push([bgPosXPrev, bgPosYPrev]);
+      } else if (mode > 0) {
+        translate = stackTranslate.pop();
+        if (translate) {
+          bgPosY = translate[1];
+          bgPosX = translate[0];
+        } else {
+          bgPosY = initBgPosY;
+          bgPosX = initBgPosX;
+        }
+        scale = stackScale.pop();   
+        if (scale) {
+          bgHeight = scale[1];
+          bgWidth = scale[0];
+        } else {
+          bgHeight = height;
+          bgWidth = width;
+        }
+        //console.log(bgWidth + ' out ' + bgHeight);        
+      } else {
+      }
 
 			img.style.backgroundSize = bgWidth+'px '+bgHeight+'px';
 			img.style.backgroundPosition = bgPosX+'px '+bgPosY+'px';
@@ -87,7 +118,7 @@ window.wheelzoom = (function(){
 			bgWidth = width;
 			bgHeight = height;
 			bgPosX = bgPosY = 0;
-			updateBgStyle();
+			updateBgStyle(0);
 		}
 
 		img.doZoomIn = function(propagate) {
@@ -121,7 +152,11 @@ window.wheelzoom = (function(){
 			// Use the previous offset to get the percent offset between the bg edge and the center of the image:
 			var bgRatioX = bgCenterX/bgWidth;
 			var bgRatioY = bgCenterY/bgHeight;
-
+        
+      bgWidthPrev = bgWidth;
+      bgHeightPrev = bgHeight;
+      bgPosXPrev = bgPosX;
+      bgPosYPrev = bgPosY;
 			// Update the bg size:
 			if (deltaY < 0) {
 				if (settings.maxZoom == -1 || (bgWidth + bgWidth*settings.zoom) / width <= settings.maxZoom) {
@@ -163,7 +198,7 @@ window.wheelzoom = (function(){
 			if (bgWidth <= width || bgHeight <= height) {
 				triggerEvent(img, 'wheelzoom.reset');
 			} else {
-				updateBgStyle();
+				updateBgStyle(deltaY);
 			}
 		}
 
@@ -189,7 +224,7 @@ window.wheelzoom = (function(){
 			bgPosX = x;
 			bgPosY = y;
 
-			updateBgStyle();
+			updateBgStyle(0);
 		}
 
 		function drag(e) {
@@ -209,7 +244,7 @@ window.wheelzoom = (function(){
 			});
 
 			previousEvent = e;
-			updateBgStyle();
+			updateBgStyle(0);
 		}
 
 		function removeDrag() {
@@ -245,8 +280,11 @@ window.wheelzoom = (function(){
 			height = parseInt(computedStyle.height, 10);
 			bgWidth = width;
 			bgHeight = height;
+      bgWidthPrev = width;
+			bgHeightPrev = height;
 			bgPosX = bgPosY = initBgPosX = initBgPosY = 0;
-
+      bgPosXPrev = bgPosYPrev = 0;
+      
 			setSrcToBackground(img);
 
 			img.style.backgroundSize =  width+'px '+height+'px';

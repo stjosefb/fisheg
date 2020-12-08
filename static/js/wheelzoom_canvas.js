@@ -64,7 +64,7 @@ window.wheelzoomcanvas = (function(){
     var moveH = 0;
     var moveW = 0;
     var stackScale = [];
-    //var stackTranslate = [];
+    var stackTranslate = [];
     
     /*
 		function setSrcToBackground(img) {
@@ -101,18 +101,53 @@ window.wheelzoomcanvas = (function(){
         scaleH = bgHeight/origHeight;
         scaleW = bgWidth/origWidth;        
       //}              
-              
-        ctx.setTransform(1, 0, 0, 1, 0, 0);        
+                    
+        stackTranslate.push([moveW, moveH]);
+        ctx.setTransform(1, 0, 0, 1, 1, 1);  
+        ctx.translate(bgPosX, bgPosY);        
         ctx.scale(scaleW, scaleH);
-
-        //stackTranslate.push([moveW, moveH]);       
+        moveW = bgPosX;
+        moveH = bgPosY;
+        
+        //stackTranslate.push([bgPosX, bgPosY]);
         //moveH = (bgHeight-origHeight)/2;
         //moveW = (bgWidth-origWidth)/2;
-        moveH = bgPosY/scaleH;
-        moveW = bgPosX/scaleW;        
-        ctx.translate(moveW, moveH);
+        //console.log(moveH + ' 1 ' + moveW);
+        
+        //moveH = bgPosY/scaleH;
+        //moveW = bgPosX/scaleW;        
+        //ctx.translate(moveW, moveH);
+        //console.log(moveH + ' 2 ' + moveW);
+        //stackTranslate.push([moveW, moveH]);
 
-      } else if (deltaY > 0) {        
+        //stackTranslate.push([bgPosX, bgPosY]);
+               
+        //console.log(bgPosX + ' in1 ' + bgPosY);
+        console.log(scaleW + ' in2 ' + scaleH);
+        console.log(bgWidth + ' in2');
+      } else if (deltaY > 0) {     
+        translate = stackTranslate.pop();
+        if (translate) {
+          moveH = translate[1];
+          moveW = translate[0];
+        } else {
+          moveH = 0;
+          moveW = 0;
+        }       
+        //scaleH2 = bgHeight/origHeight;
+        //scaleW2 = bgWidth/origWidth;        
+        
+        //moveH = bgPosY/scaleH;
+        //moveW = bgPosX/scaleW;
+        //moveH = bgPosY/scaleH2;
+        //moveW = bgPosX/scaleW2;        
+        //moveH = bgPosY;
+        //moveW = bgPosX;          
+        
+        //moveH = bgHeight - origHeight;
+        //moveW = bgWidth - origWidth;        
+        
+        
       //if (scaleH <= 0) { 
         scale = stackScale.pop();
         if (scale) {
@@ -122,34 +157,36 @@ window.wheelzoomcanvas = (function(){
           scaleH = 1;
           scaleW = 1;
         }
-      //}              
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        
+        
+      //} 
+        //ctx.translate(-moveW, -moveH);      
+        //ctx.translate(-moveW/scaleW, -moveH/scaleH);
+        //ctx.translate(-moveW*scaleW, -moveH*scaleH);
+        ctx.setTransform(1, 0, 0, 1, 1, 1);
+        ctx.translate(moveW, moveH); 
+        //ctx.translate(-moveW, -moveH); 
+        //ctx.translate(moveW/scaleW, moveH/scaleH);
+        //ctx.translate(moveW*scaleW, moveH*scaleH);
+        //ctx.translate(-moveW/scaleW, -moveH/scaleH);
+        //ctx.translate(-moveW*scaleW, -moveH*scaleH);        
         ctx.scale(scaleW, scaleH);
         //moveH = (bgHeight-origHeight)/2;
         //moveW = (bgWidth-origWidth)/2;        
 
-        /*translate = stackTranslate.pop();
-        if (translate) {
-          moveH = translate[1];
-          moveW = translate[0];
-        } else {
-          moveH = 0;
-          moveW = 0;
-        } */       
-        //scaleH2 = bgHeight/origHeight;
-        //scaleW2 = bgWidth/origWidth;        
+        //console.log(moveW + ' out1 ' + moveH);
+        console.log(scaleW + ' out2 ' + scaleH);
+        console.log(bgWidth + ' out2');
         
-        moveH = bgPosY/scaleH;
-        moveW = bgPosX/scaleW;
-        //moveH = bgPosY/scaleH2;
-        //moveW = bgPosX/scaleW2;        
-        //moveH = bgPosY;
-        //moveW = bgPosX;          
+        //ctx.translate(-moveW, -moveH); 
+        //ctx.translate(moveW, moveH); 
         //ctx.translate(moveW/scaleW, moveH/scaleH);
-        ctx.translate(moveW, moveH);        
+        //ctx.translate(-moveW/scaleW, -moveH/scaleH);
+        //ctx.translate(-moveW*scaleW, -moveH*scaleH);
+       
         
       } else {
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.setTransform(1, 0, 0, 1, 1, 1);
       }      
       
       //console.log(scaleW + " " + scaleH);
@@ -205,8 +242,10 @@ window.wheelzoomcanvas = (function(){
 					bgHeight += bgHeight*settings.zoom;
 				}
 			} else {
-				bgWidth -= bgWidth*settings.zoom;
-				bgHeight -= bgHeight*settings.zoom;
+				//bgWidth -= bgWidth*settings.zoom;
+				//bgHeight -= bgHeight*settings.zoom;
+        bgWidth = bgWidth/(1+settings.zoom);
+				bgHeight = bgHeight/(1+settings.zoom);
 			}
 
 			// Take the percent offset and apply it to the new size:
@@ -346,6 +385,7 @@ window.wheelzoomcanvas = (function(){
 			bgWidth = width;
 			bgHeight = height;
 			bgPosX = bgPosY = initBgPosX = initBgPosY = 0;
+      console.log(bgWidth + 'load0');
 
 			//setSrcToBackground(img);
       strokeRect();
