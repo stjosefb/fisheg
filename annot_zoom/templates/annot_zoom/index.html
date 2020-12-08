@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <title>Zoom</title>
     <script src="/static/js/wheelzoom.js"></script>
+    <script src="/static/js/wheelzoom_canvas.js"></script>
     <script src="/static/js/jquery-3.4.1.min.js"></script>
 
 </head>
 
-<body onload="loadZoom();">
+<!--<body onload="loadZoom();">-->
+<body>
 
 <div id="display_area" style="float: left">
     <div id="image_panel" class="" style="">
@@ -30,48 +32,70 @@
 </style>
 
 <script>
+var canvases;
 $( document ).ready(function() {
-    h = $(window).height() * 0.95;
+    h = $(window).height()*0.95;
     w = h*{{image_prop}};
-    $('#image_panel').height(h);
-    $('#image_panel').width(w);
+    //$('#image_panel').height(h);
+    //$('#image_panel').width(w);
+    $('#image_panel').height({{image_height}});
+    $('#image_panel').width({{image_width}});
 
     var canvas = document.createElement('canvas');
-
-    canvas.id = "CursorLayer";
-    canvas.width = w;
-    canvas.height = h;
-
+    canvas.id = "myCanvas";
+    canvas.width = {{image_width}};
+    canvas.height = {{image_height}};
+    canvas.style.border = "0px solid #660000";
     var body = document.getElementById("image_panel");
     body.appendChild(canvas);
-    $('#myCanvas').height(h);
-    $('#myCanvas').width(w);
+    canvases = wheelzoomcanvas(document.getElementById('myCanvas'),
+        {zoom: 0.1, maxZoom: -1, height: {{image_height}}, width: {{image_width}}});
+
+    loadZoom(canvases);
+    //#$('#myCanvas').height(h);
+    //#$('#myCanvas').width(w);
     //$('#img_src').height(h);
     //$('#img_src').width(w);
     //$('#img_src').show();
 
+    //drawline();
+    //canvas.width = w;
+    //canvas.height = h;
+
+
     //var canvas = document.getElementById("myCanvas");
-    var ctx = canvas.getContext("2d");
+    /*var ctx = canvas.getContext("2d");
     ctx.fillStyle = "#FF0000";
-    ctx.fillRect(10, 10, 150, 75);
+    ctx.fillRect(10, 10, 150, 75);*/
 });
-function loadZoom() {
+function drawline() {
+    var c = document.getElementById("myCanvas");
+    var ctx = c.getContext("2d");
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(512, 512);
+    ctx.stroke();
+}
+function loadZoom(canvas) {
+    //console.log('len='+canvases.length);
     var zoomIn  = -100;
     var zoomOut = 100;
     images = wheelzoom(document.querySelectorAll('img'), {zoom: 0.1, maxZoom: -1});
     //console.log(images.length);
-    images[1].addEventListener('wheelzoom.in', function(e) {
-        console.log(images.length);
+    canvas.addEventListener('wheelzoom.in', function(e) {
+        //console.log(images.length);
         images[0].doZoomIn();
+        images[1].doZoomIn();
     });
-    images[1].addEventListener('wheelzoom.out', function(e) {
-        console.log('o');
+    canvas.addEventListener('wheelzoom.out', function(e) {
+        //console.log('o');
         images[0].doZoomOut();
+        images[1].doZoomOut();
     });
-    images[1].addEventListener('wheelzoom.drag', function(e) {
-        console.log('d');
+    /*images[1].addEventListener('wheelzoom.drag', function(e) {
+        //console.log('d');
         images[0].doDrag(e.detail.bgPosX, e.detail.bgPosY);
-    });
+    });*/
 }
 </script>
 </html>
