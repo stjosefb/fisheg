@@ -61,7 +61,7 @@ window.wheelzoom = (function(){
 		var bgPosXPrev;
 		var bgPosYPrev;    
     var stackScale = [];
-    var stackTranslate = [];    
+    //var stackTranslate = [];    
 
 		function setSrcToBackground(img) {
 			img.style.backgroundImage = 'url("'+img.src+'")';
@@ -88,16 +88,16 @@ window.wheelzoom = (function(){
         stackScale.push([bgWidthPrev, bgHeightPrev]);
         //console.log(bgWidth + ' in ' + bgHeight);
         //console.log(bgPosX + ' in2 ' + bgPosY);
-        stackTranslate.push([bgPosXPrev, bgPosYPrev]);
+        /*stackTranslate.push([bgPosXPrev, bgPosYPrev]);*/
       } else if (mode > 0) {
-        translate = stackTranslate.pop();
+        /*translate = stackTranslate.pop();
         if (translate) {
-          bgPosY = translate[1];
-          bgPosX = translate[0];
+          //bgPosY = translate[1];
+          //bgPosX = translate[0];
         } else {
-          bgPosY = initBgPosY;
-          bgPosX = initBgPosX;
-        }
+          //bgPosY = initBgPosY;
+          //bgPosX = initBgPosX;
+        }*/
         scale = stackScale.pop();   
         if (scale) {
           bgHeight = scale[1];
@@ -164,8 +164,10 @@ window.wheelzoom = (function(){
 					bgHeight += bgHeight*settings.zoom;
 				}
 			} else {
-				bgWidth -= bgWidth*settings.zoom;
-				bgHeight -= bgHeight*settings.zoom;
+				//bgWidth -= bgWidth*settings.zoom;
+				//bgHeight -= bgHeight*settings.zoom;
+        bgWidth = bgWidth/(1+settings.zoom);
+				bgHeight = bgHeight/(1+settings.zoom);        
 			}
 
 			// Take the percent offset and apply it to the new size:

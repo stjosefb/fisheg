@@ -64,7 +64,7 @@ window.wheelzoomcanvas = (function(){
     var moveH = 0;
     var moveW = 0;
     var stackScale = [];
-    var stackTranslate = [];
+    //var stackTranslate = [];
     
     /*
 		function setSrcToBackground(img) {
@@ -105,7 +105,7 @@ window.wheelzoomcanvas = (function(){
         scaleW = bgWidth/origWidth;        
       //}              
                     
-        stackTranslate.push([moveW, moveH]);
+        /*stackTranslate.push([moveW, moveH]);*/
         ctx.setTransform(1, 0, 0, 1, 1, 1);  
         ctx.translate(bgPosX, bgPosY);        
         ctx.scale(scaleW, scaleH);
@@ -129,14 +129,14 @@ window.wheelzoomcanvas = (function(){
         //console.log(scaleW + ' in2 ' + scaleH);
         //console.log(bgWidth + ' in2');
       } else if (deltaY > 0) {     
-        translate = stackTranslate.pop();
+        /*translate = stackTranslate.pop();
         if (translate) {
           moveH = translate[1];
           moveW = translate[0];
         } else {
           moveH = 0;
           moveW = 0;
-        }       
+        }       */
         //scaleH2 = bgHeight/origHeight;
         //scaleW2 = bgWidth/origWidth;        
         
@@ -144,8 +144,8 @@ window.wheelzoomcanvas = (function(){
         //moveW = bgPosX/scaleW;
         //moveH = bgPosY/scaleH2;
         //moveW = bgPosX/scaleW2;        
-        //moveH = bgPosY;
-        //moveW = bgPosX;          
+        moveH = bgPosY;
+        moveW = bgPosX;          
         
         //moveH = bgHeight - origHeight;
         //moveW = bgWidth - origWidth;        
