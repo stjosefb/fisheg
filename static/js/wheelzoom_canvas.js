@@ -95,7 +95,10 @@ window.wheelzoomcanvas = (function(){
         moveW = (bgWidth-origWidth)/2;
       }*/
       var ctx = cnvs.getContext("2d");
-      if (deltaY < 0) {
+      //ctx.setTransform(1, 0, 0, 1, 1, 1);
+      if (deltaY == -999) {
+        ctx.setTransform(1, 0, 0, 1, 1, 1);
+      } else if (deltaY < 0) {
       //if (scaleH <= 0) {
         stackScale.push([scaleW, scaleH]);       
         scaleH = bgHeight/origHeight;
@@ -123,8 +126,8 @@ window.wheelzoomcanvas = (function(){
         //stackTranslate.push([bgPosX, bgPosY]);
                
         //console.log(bgPosX + ' in1 ' + bgPosY);
-        console.log(scaleW + ' in2 ' + scaleH);
-        console.log(bgWidth + ' in2');
+        //console.log(scaleW + ' in2 ' + scaleH);
+        //console.log(bgWidth + ' in2');
       } else if (deltaY > 0) {     
         translate = stackTranslate.pop();
         if (translate) {
@@ -175,8 +178,8 @@ window.wheelzoomcanvas = (function(){
         //moveW = (bgWidth-origWidth)/2;        
 
         //console.log(moveW + ' out1 ' + moveH);
-        console.log(scaleW + ' out2 ' + scaleH);
-        console.log(bgWidth + ' out2');
+        //console.log(scaleW + ' out2 ' + scaleH);
+        //console.log(bgWidth + ' out2');
         
         //ctx.translate(-moveW, -moveH); 
         //ctx.translate(moveW, moveH); 
@@ -186,7 +189,15 @@ window.wheelzoomcanvas = (function(){
        
         
       } else {
+        //ctx.setTransform(1, 0, 0, 1, 1, 1);
+        //console.log('0 drag');
+        //console.log(bgPosX + ' ' + bgPosY);
+        scaleH2 = bgHeight/origHeight;
+        scaleW2 = bgWidth/origWidth;        
         ctx.setTransform(1, 0, 0, 1, 1, 1);
+        ctx.translate(bgPosX, bgPosY);        
+        //ctx.translate(50, 50);        
+        ctx.scale(scaleW2, scaleH2);                
       }      
       
       //console.log(scaleW + " " + scaleH);
@@ -200,7 +211,7 @@ window.wheelzoomcanvas = (function(){
 			bgWidth = width;
 			bgHeight = height;
 			bgPosX = bgPosY = 0;
-			updateBgStyle(0);
+			updateBgStyle(-999);
 		}
     
 		cnvs.doZoomIn = function(propagate) {
@@ -304,24 +315,27 @@ window.wheelzoomcanvas = (function(){
         strokeRect();
 			}
 		}
-    /*
-		img.doDrag = function (x, y) {
+    
+		cnvs.doDrag = function (x, y) {
 			bgPosX = x;
 			bgPosY = y;
 
-			updateBgStyle();
+			updateBgStyle(0);
 		}
 
 		function drag(e) {
+      //console.log('drag');
 			e.preventDefault();
 			var xShift = e.pageX - previousEvent.pageX;
 			var yShift = e.pageY - previousEvent.pageY;
 			var x = bgPosX + xShift;
 			var y = bgPosY + yShift;
 
-			img.doDrag(x, y);
+			cnvs.doDrag(x, y);
+        clearCanvas();
+        strokeRect();      
 
-			triggerEvent(img, 'wheelzoom.drag', {
+			triggerEvent(cnvs, 'wheelzoom.drag', {
 				bgPosX: bgPosX,
 				bgPosY: bgPosY,
 				xShift: xShift,
@@ -329,11 +343,12 @@ window.wheelzoomcanvas = (function(){
 			});
 
 			previousEvent = e;
-			updateBgStyle();
+			updateBgStyle(0);
+      //console.log('end drag');
 		}
 
 		function removeDrag() {
-			triggerEvent(img, 'wheelzoom.dragend', {
+			triggerEvent(cnvs, 'wheelzoom.dragend', {
 				x: bgPosX - initBgPosX,
 				y: bgPosY - initBgPosY
 			});
@@ -345,17 +360,17 @@ window.wheelzoomcanvas = (function(){
 		// Make the background draggable
 		function draggable(e) {
       //console.log(e.button);
-      if (e.button == 2) {
-        triggerEvent(img, 'wheelzoom.dragstart');
+      //if (e.button == 2) {
+        triggerEvent(cnvs, 'wheelzoom.dragstart');
 
         e.preventDefault();
         previousEvent = e;
         document.addEventListener('mousemove', drag);
         document.addEventListener('mouseup', removeDrag);
         return false;
-      }
+      //}
 		}
-    */
+    
     function clearCanvas() {
       var context = cnvs.getContext("2d");
       // Store the current transformation matrix
@@ -385,7 +400,7 @@ window.wheelzoomcanvas = (function(){
 			bgWidth = width;
 			bgHeight = height;
 			bgPosX = bgPosY = initBgPosX = initBgPosY = 0;
-      console.log(bgWidth + 'load0');
+      //console.log(bgWidth + 'load0');
 
 			//setSrcToBackground(img);
       strokeRect();
@@ -395,15 +410,15 @@ window.wheelzoomcanvas = (function(){
 			cnvs.addEventListener('wheelzoom.reset', reset);
 			cnvs.addEventListener('wheelzoom.destroy', destroy);
 			cnvs.addEventListener('wheel', onwheel);
-			//img.addEventListener('mousedown', draggable);
+			cnvs.addEventListener('mousedown', draggable);
 		}
 
 		var destroy = function (originalProperties) {
 			cnvs.removeEventListener('wheelzoom.destroy', destroy);
 			cnvs.removeEventListener('wheelzoom.reset', reset);
-			//img.removeEventListener('mouseup', removeDrag);
-			//img.removeEventListener('mousemove', drag);
-			//img.removeEventListener('mousedown', draggable);
+			cnvs.removeEventListener('mouseup', removeDrag);
+			cnvs.removeEventListener('mousemove', drag);
+			cnvs.removeEventListener('mousedown', draggable);
 			cnvs.removeEventListener('wheel', onwheel);
 
 			/*img.style.backgroundImage = originalProperties.backgroundImage;

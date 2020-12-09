@@ -19,6 +19,8 @@
         <!--<canvas id="myCanvas"></canvas>-->
     </div>
 </div>
+</body>
+<!--<button onclick="test()">Move</button>-->
 
 
 
@@ -32,6 +34,12 @@
 </style>
 
 <script>
+/*function test() {
+    var c = document.getElementById("myCanvas");
+    var ctx = c.getContext("2d");
+    ctx.translate(50, 50);
+    console.log('move');
+}*/
 var canvases;
 $( document ).ready(function() {
     h = $(window).height()*0.95;
@@ -45,6 +53,7 @@ $( document ).ready(function() {
     canvas.id = "myCanvas";
     canvas.width = {{image_width}};
     canvas.height = {{image_height}};
+    canvas.oncontextmenu = function(){return false;};
     canvas.style.border = "0px solid #660000";
     var body = document.getElementById("image_panel");
     body.appendChild(canvas);
@@ -92,10 +101,11 @@ function loadZoom(canvas) {
         images[0].doZoomOut();
         images[1].doZoomOut();
     });
-    /*images[1].addEventListener('wheelzoom.drag', function(e) {
+    canvas.addEventListener('wheelzoom.drag', function(e) {
         //console.log('d');
         images[0].doDrag(e.detail.bgPosX, e.detail.bgPosY);
-    });*/
+        images[1].doDrag(e.detail.bgPosX, e.detail.bgPosY);
+    });
 }
 </script>
 </html>
