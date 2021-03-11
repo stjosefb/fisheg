@@ -28,8 +28,9 @@
             <option value="default">Default (VIA)</option>
             <option value="imagemask">Upload Image Mask</option>
             {# <option value="bylabel" disabled>ByLabel</option> #}
-            <option value="freelabel" selected>FreeLabel</option>
+            <option value="freelabel">FreeLabel</option>
             {# <option value="maskrcnn" disabled>Utilizing Mask R-CNN</option> #}
+            <option value="superpixel" selected>Superpixel</option>
         </select>
     </div>
 
@@ -78,6 +79,8 @@
 {% include "annotate/default.html" %}
 {% elif method == 'freelabel' %}
 {% include "annotate/freelabel.html" %}
+{% elif method == 'superpixel' %}
+{% include "annotate/superpixel.html" %}
 {% endif %}
 
 
@@ -110,6 +113,9 @@ $( document ).ready(function() {
     {% include "annotate/default_script.js" %}
 {% elif method == 'freelabel' %}
     {% include "annotate/freelabel_script.js" %}
+    {% include "annotate/default_script.js" %}
+{% elif method == 'superpixel' %}
+    {% include "annotate/superpixel_script.js" %}
     {% include "annotate/default_script.js" %}
 {% endif %}
 

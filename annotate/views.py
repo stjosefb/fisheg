@@ -129,7 +129,7 @@ def index(request, list_seg_in=None, method='GET', data={}):
         #'list_x': str_list_x,
         #'list_y': str_list_y,
         'list_seg': list_seg,
-        'method': annot_method if annot_method != '' else 'freelabel'
+        'method': annot_method if annot_method != '' else 'superpixel'
         # 'message': message
     }
     if annot:
