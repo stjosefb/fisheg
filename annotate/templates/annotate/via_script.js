@@ -1678,54 +1678,56 @@ function _via_reg_canvas_dblclick_handler(e) {
 
 // user clicks on the canvas
 function _via_reg_canvas_mousedown_handler(e) {
-  e.stopPropagation();
-  _via_click_x0 = e.offsetX; _via_click_y0 = e.offsetY;
-  _via_region_edge = is_on_region_corner(_via_click_x0, _via_click_y0);
-  var region_id = is_inside_region(_via_click_x0, _via_click_y0);
+  if (e.button == 0) {
+    e.stopPropagation();
+    _via_click_x0 = e.offsetX; _via_click_y0 = e.offsetY;
+    _via_region_edge = is_on_region_corner(_via_click_x0, _via_click_y0);
+    var region_id = is_inside_region(_via_click_x0, _via_click_y0);
 
-  if ( _via_is_region_selected ) {
-    // check if user clicked on the region boundary
-    if ( _via_region_edge[1] > 0 ) {
-      if ( !_via_is_user_resizing_region ) {
-        if ( _via_region_edge[0] !== _via_user_sel_region_id ) {
-          _via_user_sel_region_id = _via_region_edge[0];
+    if ( _via_is_region_selected ) {
+      // check if user clicked on the region boundary
+      if ( _via_region_edge[1] > 0 ) {
+        if ( !_via_is_user_resizing_region ) {
+          if ( _via_region_edge[0] !== _via_user_sel_region_id ) {
+            _via_user_sel_region_id = _via_region_edge[0];
+          }
+          // resize region
+          _via_is_user_resizing_region = true;
         }
-        // resize region
-        _via_is_user_resizing_region = true;
+      } else {
+        var yes = is_inside_this_region(_via_click_x0,
+                                        _via_click_y0,
+                                        _via_user_sel_region_id);
+        if (yes) {
+          if( !_via_is_user_moving_region ) {
+            _via_is_user_moving_region = true;
+            _via_region_click_x = _via_click_x0;
+            _via_region_click_y = _via_click_y0;
+          }
+        }
+        if ( region_id === -1 ) {
+          // mousedown on outside any region
+          _via_is_user_drawing_region = true;
+          // unselect all regions
+          _via_is_region_selected = false;
+          _via_user_sel_region_id = -1;
+          toggle_all_regions_selection(false);
+        }
       }
     } else {
-      var yes = is_inside_this_region(_via_click_x0,
-                                      _via_click_y0,
-                                      _via_user_sel_region_id);
-      if (yes) {
-        if( !_via_is_user_moving_region ) {
-          _via_is_user_moving_region = true;
-          _via_region_click_x = _via_click_x0;
-          _via_region_click_y = _via_click_y0;
-        }
-      }
       if ( region_id === -1 ) {
-        // mousedown on outside any region
-        _via_is_user_drawing_region = true;
-        // unselect all regions
-        _via_is_region_selected = false;
-        _via_user_sel_region_id = -1;
-        toggle_all_regions_selection(false);
-      }
-    }
-  } else {
-    if ( region_id === -1 ) {
-      // mousedown outside a region
-      if (_via_current_shape !== VIA_REGION_SHAPE.POLYGON &&
-          _via_current_shape !== VIA_REGION_SHAPE.POLYLINE &&
-          _via_current_shape !== VIA_REGION_SHAPE.POINT) {
-        // this is a bounding box drawing event
+        // mousedown outside a region
+        if (_via_current_shape !== VIA_REGION_SHAPE.POLYGON &&
+            _via_current_shape !== VIA_REGION_SHAPE.POLYLINE &&
+            _via_current_shape !== VIA_REGION_SHAPE.POINT) {
+          // this is a bounding box drawing event
+          _via_is_user_drawing_region = true;
+        }
+      } else {
+        // mousedown inside a region
+        // this could lead to (1) region selection or (2) region drawing
         _via_is_user_drawing_region = true;
       }
-    } else {
-      // mousedown inside a region
-      // this could lead to (1) region selection or (2) region drawing
-      _via_is_user_drawing_region = true;
     }
   }
 }
@@ -1734,314 +1736,64 @@ function _via_reg_canvas_mousedown_handler(e) {
 //  - new region drawing (including polygon)
 //  - moving/resizing/select/unselect existing region
 function _via_reg_canvas_mouseup_handler(e) {
-  e.stopPropagation();
-  _via_click_x1 = e.offsetX; _via_click_y1 = e.offsetY;
+  if (e.button == 0) {
+    e.stopPropagation();
+    _via_click_x1 = e.offsetX; _via_click_y1 = e.offsetY;
 
-  var click_dx = Math.abs(_via_click_x1 - _via_click_x0);
-  var click_dy = Math.abs(_via_click_y1 - _via_click_y0);
+    var click_dx = Math.abs(_via_click_x1 - _via_click_x0);
+    var click_dy = Math.abs(_via_click_y1 - _via_click_y0);
 
-  // indicates that user has finished moving a region
-  if ( _via_is_user_moving_region ) {
-    _via_is_user_moving_region = false;
-    _via_reg_canvas.style.cursor = "default";
+    // indicates that user has finished moving a region
+    if ( _via_is_user_moving_region ) {
+      _via_is_user_moving_region = false;
+      _via_reg_canvas.style.cursor = "default";
 
-    var move_x = Math.round(_via_click_x1 - _via_region_click_x);
-    var move_y = Math.round(_via_click_y1 - _via_region_click_y);
+      var move_x = Math.round(_via_click_x1 - _via_region_click_x);
+      var move_y = Math.round(_via_click_y1 - _via_region_click_y);
 
-    if (Math.abs(move_x) > VIA_MOUSE_CLICK_TOL ||
-        Math.abs(move_y) > VIA_MOUSE_CLICK_TOL) {
-      // move all selected regions
-      _via_move_selected_regions(move_x, move_y);
-    } else {
-      // indicates a user click on an already selected region
-      // this could indicate the user's intention to select another
-      // nested region within this region
-      // OR
-      // draw a nested region (i.e. region inside a region)
-
-      // traverse the canvas regions in alternating ascending
-      // and descending order to solve the issue of nested regions
-      var nested_region_id = is_inside_region(_via_click_x0, _via_click_y0, true);
-      if (nested_region_id >= 0 &&
-          nested_region_id !== _via_user_sel_region_id) {
-        _via_user_sel_region_id = nested_region_id;
-        _via_is_region_selected = true;
-        _via_is_user_moving_region = false;
-
-        // de-select all other regions if the user has not pressed Shift
-        if ( !e.shiftKey ) {
-          toggle_all_regions_selection(false);
-        }
-        set_region_select_state(nested_region_id, true);
-        annotation_editor_show();
+      if (Math.abs(move_x) > VIA_MOUSE_CLICK_TOL ||
+          Math.abs(move_y) > VIA_MOUSE_CLICK_TOL) {
+        // move all selected regions
+        _via_move_selected_regions(move_x, move_y);
       } else {
-        // user clicking inside an already selected region
-        // indicates that the user intends to draw a nested region
-        toggle_all_regions_selection(false);
-        _via_is_region_selected = false;
+        // indicates a user click on an already selected region
+        // this could indicate the user's intention to select another
+        // nested region within this region
+        // OR
+        // draw a nested region (i.e. region inside a region)
 
-        switch (_via_current_shape) {
-        case VIA_REGION_SHAPE.POLYLINE: // handled by case for POLYGON
-        case VIA_REGION_SHAPE.POLYGON:
-          // user has clicked on the first point in a new polygon
-          // see also event 'mouseup' for _via_is_user_drawing_polygon=true
-          _via_is_user_drawing_polygon = true;
+        // traverse the canvas regions in alternating ascending
+        // and descending order to solve the issue of nested regions
+        var nested_region_id = is_inside_region(_via_click_x0, _via_click_y0, true);
+        if (nested_region_id >= 0 &&
+            nested_region_id !== _via_user_sel_region_id) {
+          _via_user_sel_region_id = nested_region_id;
+          _via_is_region_selected = true;
+          _via_is_user_moving_region = false;
 
-          var canvas_polygon_region = new file_region();
-          canvas_polygon_region.shape_attributes['name'] = _via_current_shape;
-          canvas_polygon_region.shape_attributes['all_points_x'] = [Math.round(_via_click_x0)];
-          canvas_polygon_region.shape_attributes['all_points_y'] = [Math.round(_via_click_y0)];
-          var new_length = _via_canvas_regions.push(canvas_polygon_region);
-          _via_current_polygon_region_id = new_length - 1;
-          break;
-
-        case VIA_REGION_SHAPE.POINT:
-          // user has marked a landmark point
-          var point_region = new file_region();
-          point_region.shape_attributes['name'] = VIA_REGION_SHAPE.POINT;
-          point_region.shape_attributes['cx'] = Math.round(_via_click_x0 * _via_canvas_scale);
-          point_region.shape_attributes['cy'] = Math.round(_via_click_y0 * _via_canvas_scale);
-          _via_img_metadata[_via_image_id].regions.push(point_region);
-
-          var canvas_point_region = new file_region();
-          canvas_point_region.shape_attributes['name'] = VIA_REGION_SHAPE.POINT;
-          canvas_point_region.shape_attributes['cx'] = Math.round(_via_click_x0);
-          canvas_point_region.shape_attributes['cy'] = Math.round(_via_click_y0);
-          _via_canvas_regions.push(canvas_point_region);
-          break;
-        }
-        annotation_editor_update_content();
-      }
-    }
-    _via_redraw_reg_canvas();
-    _via_reg_canvas.focus();
-    return;
-  }
-
-  // indicates that user has finished resizing a region
-  if ( _via_is_user_resizing_region ) {
-    // _via_click(x0,y0) to _via_click(x1,y1)
-    _via_is_user_resizing_region = false;
-    _via_reg_canvas.style.cursor = "default";
-
-    // update the region
-    var region_id = _via_region_edge[0];
-    var image_attr = _via_img_metadata[_via_image_id].regions[region_id].shape_attributes;
-    var canvas_attr = _via_canvas_regions[region_id].shape_attributes;
-
-    switch (canvas_attr['name']) {
-    case VIA_REGION_SHAPE.RECT:
-      var d = [canvas_attr['x'], canvas_attr['y'], 0, 0];
-      d[2] = d[0] + canvas_attr['width'];
-      d[3] = d[1] + canvas_attr['height'];
-
-      var mx = _via_current_x;
-      var my = _via_current_y;
-      var preserve_aspect_ratio = false;
-
-      // constrain (mx,my) to lie on a line connecting a diagonal of rectangle
-      if ( _via_is_ctrl_pressed ) {
-        preserve_aspect_ratio = true;
-      }
-
-      rect_update_corner(_via_region_edge[1], d, mx, my, preserve_aspect_ratio);
-      rect_standardize_coordinates(d);
-
-      var w = Math.abs(d[2] - d[0]);
-      var h = Math.abs(d[3] - d[1]);
-
-      image_attr['x'] = Math.round(d[0] * _via_canvas_scale);
-      image_attr['y'] = Math.round(d[1] * _via_canvas_scale);
-      image_attr['width'] = Math.round(w * _via_canvas_scale);
-      image_attr['height'] = Math.round(h * _via_canvas_scale);
-
-      canvas_attr['x'] = Math.round( image_attr['x'] / _via_canvas_scale);
-      canvas_attr['y'] = Math.round( image_attr['y'] / _via_canvas_scale);
-      canvas_attr['width'] = Math.round( image_attr['width'] / _via_canvas_scale);
-      canvas_attr['height'] = Math.round( image_attr['height'] / _via_canvas_scale);
-      break;
-
-    case VIA_REGION_SHAPE.CIRCLE:
-      var dx = Math.abs(canvas_attr['cx'] - _via_current_x);
-      var dy = Math.abs(canvas_attr['cy'] - _via_current_y);
-      var new_r = Math.sqrt( dx*dx + dy*dy );
-
-      image_attr['r'] = fixfloat(new_r * _via_canvas_scale);
-      canvas_attr['r'] = Math.round( image_attr['r'] / _via_canvas_scale);
-      break;
-
-    case VIA_REGION_SHAPE.ELLIPSE:
-      var new_rx = canvas_attr['rx'];
-      var new_ry = canvas_attr['ry'];
-      var new_theta = canvas_attr['theta'];
-      var dx = Math.abs(canvas_attr['cx'] - _via_current_x);
-      var dy = Math.abs(canvas_attr['cy'] - _via_current_y);
-
-      switch(_via_region_edge[1]) {
-      case 5:
-        new_ry = Math.sqrt(dx*dx + dy*dy);
-        new_theta = Math.atan2(- (_via_current_x - canvas_attr['cx']), (_via_current_y - canvas_attr['cy']));
-        break;
-
-      case 6:
-        new_rx = Math.sqrt(dx*dx + dy*dy);
-        new_theta = Math.atan2((_via_current_y - canvas_attr['cy']), (_via_current_x - canvas_attr['cx']));
-        break;
-
-      default:
-        new_rx = dx;
-        new_ry = dy;
-        new_theta = 0;
-        break;
-      }
-
-      image_attr['rx'] = fixfloat(new_rx * _via_canvas_scale);
-      image_attr['ry'] = fixfloat(new_ry * _via_canvas_scale);
-      image_attr['theta'] = fixfloat(new_theta);
-
-      canvas_attr['rx'] = Math.round(image_attr['rx'] / _via_canvas_scale);
-      canvas_attr['ry'] = Math.round(image_attr['ry'] / _via_canvas_scale);
-      canvas_attr['theta'] = fixfloat(new_theta);
-      break;
-
-    case VIA_REGION_SHAPE.POLYLINE: // handled by polygon
-    case VIA_REGION_SHAPE.POLYGON:
-      var moved_vertex_id = _via_region_edge[1] - VIA_POLYGON_RESIZE_VERTEX_OFFSET;
-
-      if ( e.ctrlKey ) {
-        // if on vertex, delete it
-        // if on edge, add a new vertex
-        var r = _via_canvas_regions[_via_user_sel_region_id].shape_attributes;
-        var shape = r.name;
-        var is_on_vertex = is_on_polygon_vertex(r['all_points_x'], r['all_points_y'], _via_current_x, _via_current_y);
-
-        if ( is_on_vertex === _via_region_edge[1] ) {
-          // click on vertex, hence delete vertex
-          if ( _via_polygon_del_vertex(region_id, moved_vertex_id) ) {
-            show_message('Deleted vertex ' + moved_vertex_id + ' from region');
+          // de-select all other regions if the user has not pressed Shift
+          if ( !e.shiftKey ) {
+            toggle_all_regions_selection(false);
           }
-        } else {
-          var is_on_edge = is_on_polygon_edge(r['all_points_x'], r['all_points_y'], _via_current_x, _via_current_y);
-          if ( is_on_edge === _via_region_edge[1] ) {
-            // click on edge, hence add new vertex
-            var vertex_index = is_on_edge - VIA_POLYGON_RESIZE_VERTEX_OFFSET;
-            var canvas_x0 = Math.round(_via_click_x1);
-            var canvas_y0 = Math.round(_via_click_y1);
-            var img_x0 = Math.round( canvas_x0 * _via_canvas_scale );
-            var img_y0 = Math.round( canvas_y0 * _via_canvas_scale );
-            canvas_x0 = Math.round( img_x0 / _via_canvas_scale );
-            canvas_y0 = Math.round( img_y0 / _via_canvas_scale );
-
-            _via_canvas_regions[region_id].shape_attributes['all_points_x'].splice(vertex_index+1, 0, canvas_x0);
-            _via_canvas_regions[region_id].shape_attributes['all_points_y'].splice(vertex_index+1, 0, canvas_y0);
-            _via_img_metadata[_via_image_id].regions[region_id].shape_attributes['all_points_x'].splice(vertex_index+1, 0, img_x0);
-            _via_img_metadata[_via_image_id].regions[region_id].shape_attributes['all_points_y'].splice(vertex_index+1, 0, img_y0);
-
-            show_message('Added 1 new vertex to ' + shape + ' region');
-          }
-        }
-      } else {
-        // update coordinate of vertex
-        var imx = Math.round(_via_current_x * _via_canvas_scale);
-        var imy = Math.round(_via_current_y * _via_canvas_scale);
-        image_attr['all_points_x'][moved_vertex_id] = imx;
-        image_attr['all_points_y'][moved_vertex_id] = imy;
-        canvas_attr['all_points_x'][moved_vertex_id] = Math.round( imx / _via_canvas_scale );
-        canvas_attr['all_points_y'][moved_vertex_id] = Math.round( imy / _via_canvas_scale );
-      }
-      break;
-    } // end of switch()
-    _via_redraw_reg_canvas();
-    _via_reg_canvas.focus();
-    return;
-  }
-
-  // denotes a single click (= mouse down + mouse up)
-  if ( click_dx < VIA_MOUSE_CLICK_TOL ||
-       click_dy < VIA_MOUSE_CLICK_TOL ) {
-    // if user is already drawing polygon, then each click adds a new point
-    if ( _via_is_user_drawing_polygon ) {
-      var canvas_x0 = Math.round(_via_click_x1);
-      var canvas_y0 = Math.round(_via_click_y1);
-      var n = _via_canvas_regions[_via_current_polygon_region_id].shape_attributes['all_points_x'].length;
-      var last_x0 = _via_canvas_regions[_via_current_polygon_region_id].shape_attributes['all_points_x'][n-1];
-      var last_y0 = _via_canvas_regions[_via_current_polygon_region_id].shape_attributes['all_points_y'][n-1];
-      // discard if the click was on the last vertex
-      if ( canvas_x0 !== last_x0 || canvas_y0 !== last_y0 ) {
-        // user clicked on a new polygon point
-        _via_canvas_regions[_via_current_polygon_region_id].shape_attributes['all_points_x'].push(canvas_x0);
-        _via_canvas_regions[_via_current_polygon_region_id].shape_attributes['all_points_y'].push(canvas_y0);
-      }
-    } else {
-      var region_id = is_inside_region(_via_click_x0, _via_click_y0);
-      if ( region_id >= 0 ) {
-        // first click selects region
-        _via_user_sel_region_id     = region_id;
-        _via_is_region_selected     = true;
-        _via_is_user_moving_region  = false;
-        _via_is_user_drawing_region = false;
-
-        // de-select all other regions if the user has not pressed Shift
-        if ( !e.shiftKey ) {
-          annotation_editor_clear_row_highlight();
-          toggle_all_regions_selection(false);
-        }
-        set_region_select_state(region_id, true);
-
-        // show annotation editor only when a single region is selected
-        if ( !e.shiftKey ) {
+          set_region_select_state(nested_region_id, true);
           annotation_editor_show();
         } else {
-          annotation_editor_hide();
-        }
-
-        // show the region info
-        if (_via_is_region_info_visible) {
-          var canvas_attr = _via_canvas_regions[region_id].shape_attributes;
-
-          switch (canvas_attr['name']) {
-          case VIA_REGION_SHAPE.RECT:
-            break;
-
-          case VIA_REGION_SHAPE.CIRCLE:
-            var rf = document.getElementById('region_info');
-            var attr = _via_canvas_regions[_via_user_sel_region_id].shape_attributes;
-            rf.innerHTML +=  ',' + ' Radius:' + attr['r'];
-            break;
-
-          case VIA_REGION_SHAPE.ELLIPSE:
-            var rf = document.getElementById('region_info');
-            var attr = _via_canvas_regions[_via_user_sel_region_id].shape_attributes;
-            rf.innerHTML +=  ',' + ' X-radius:' + attr['rx'] + ',' + ' Y-radius:' + attr['ry'];
-            break;
-
-          case VIA_REGION_SHAPE.POLYLINE:
-          case VIA_REGION_SHAPE.POLYGON:
-            break;
-          }
-        }
-
-        show_message('Region selected. If you intended to draw a region, click again inside the selected region to start drawing a region.')
-      } else {
-        if ( _via_is_user_drawing_region ) {
-          // clear all region selection
-          _via_is_user_drawing_region = false;
-          _via_is_region_selected     = false;
+          // user clicking inside an already selected region
+          // indicates that the user intends to draw a nested region
           toggle_all_regions_selection(false);
-          annotation_editor_hide();
-        } else {
+          _via_is_region_selected = false;
+
           switch (_via_current_shape) {
           case VIA_REGION_SHAPE.POLYLINE: // handled by case for POLYGON
           case VIA_REGION_SHAPE.POLYGON:
             // user has clicked on the first point in a new polygon
-            // see also event 'mouseup' for _via_is_user_moving_region=true
+            // see also event 'mouseup' for _via_is_user_drawing_polygon=true
             _via_is_user_drawing_polygon = true;
 
             var canvas_polygon_region = new file_region();
             canvas_polygon_region.shape_attributes['name'] = _via_current_shape;
-            canvas_polygon_region.shape_attributes['all_points_x'] = [ Math.round(_via_click_x0) ];
-            canvas_polygon_region.shape_attributes['all_points_y'] = [ Math.round(_via_click_y0)] ;
-
+            canvas_polygon_region.shape_attributes['all_points_x'] = [Math.round(_via_click_x0)];
+            canvas_polygon_region.shape_attributes['all_points_y'] = [Math.round(_via_click_y0)];
             var new_length = _via_canvas_regions.push(canvas_polygon_region);
             _via_current_polygon_region_id = new_length - 1;
             break;
@@ -2059,146 +1811,398 @@ function _via_reg_canvas_mouseup_handler(e) {
             canvas_point_region.shape_attributes['cx'] = Math.round(_via_click_x0);
             canvas_point_region.shape_attributes['cy'] = Math.round(_via_click_y0);
             _via_canvas_regions.push(canvas_point_region);
-
-            annotation_editor_update_content();
             break;
           }
+          annotation_editor_update_content();
         }
-      }
-    }
-    _via_redraw_reg_canvas();
-    _via_reg_canvas.focus();
-    return;
-  }
-
-  // indicates that user has finished drawing a new region
-  if ( _via_is_user_drawing_region ) {
-    _via_is_user_drawing_region = false;
-    var region_x0 = _via_click_x0;
-    var region_y0 = _via_click_y0;
-    var region_x1 = _via_click_x1;
-    var region_y1 = _via_click_y1;
-
-    var original_img_region = new file_region();
-    var canvas_img_region = new file_region();
-    var region_dx = Math.abs(region_x1 - region_x0);
-    var region_dy = Math.abs(region_y1 - region_y0);
-    var new_region_added = false;
-
-    if ( region_dx > VIA_REGION_MIN_DIM && region_dy > VIA_REGION_MIN_DIM ) { // avoid regions with 0 dim
-      switch(_via_current_shape) {
-      case VIA_REGION_SHAPE.RECT:
-        // ensure that (x0,y0) is top-left and (x1,y1) is bottom-right
-        if ( _via_click_x0 < _via_click_x1 ) {
-          region_x0 = _via_click_x0;
-          region_x1 = _via_click_x1;
-        } else {
-          region_x0 = _via_click_x1;
-          region_x1 = _via_click_x0;
-        }
-
-        if ( _via_click_y0 < _via_click_y1 ) {
-          region_y0 = _via_click_y0;
-          region_y1 = _via_click_y1;
-        } else {
-          region_y0 = _via_click_y1;
-          region_y1 = _via_click_y0;
-        }
-
-        var x = Math.round(region_x0 * _via_canvas_scale);
-        var y = Math.round(region_y0 * _via_canvas_scale);
-        var width  = Math.round(region_dx * _via_canvas_scale);
-        var height = Math.round(region_dy * _via_canvas_scale);
-        original_img_region.shape_attributes['name'] = 'rect';
-        original_img_region.shape_attributes['x'] = x;
-        original_img_region.shape_attributes['y'] = y;
-        original_img_region.shape_attributes['width'] = width;
-        original_img_region.shape_attributes['height'] = height;
-
-        canvas_img_region.shape_attributes['name'] = 'rect';
-        canvas_img_region.shape_attributes['x'] = Math.round( x / _via_canvas_scale );
-        canvas_img_region.shape_attributes['y'] = Math.round( y / _via_canvas_scale );
-        canvas_img_region.shape_attributes['width'] = Math.round( width / _via_canvas_scale );
-        canvas_img_region.shape_attributes['height'] = Math.round( height / _via_canvas_scale );
-
-        new_region_added = true;
-        break;
-
-      case VIA_REGION_SHAPE.CIRCLE:
-        var cx = Math.round(region_x0 * _via_canvas_scale);
-        var cy = Math.round(region_y0 * _via_canvas_scale);
-        var r  = Math.round( Math.sqrt(region_dx*region_dx + region_dy*region_dy) * _via_canvas_scale );
-
-        original_img_region.shape_attributes['name'] = 'circle';
-        original_img_region.shape_attributes['cx'] = cx;
-        original_img_region.shape_attributes['cy'] = cy;
-        original_img_region.shape_attributes['r'] = r;
-
-        canvas_img_region.shape_attributes['name'] = 'circle';
-        canvas_img_region.shape_attributes['cx'] = Math.round( cx / _via_canvas_scale );
-        canvas_img_region.shape_attributes['cy'] = Math.round( cy / _via_canvas_scale );
-        canvas_img_region.shape_attributes['r'] = Math.round( r / _via_canvas_scale );
-
-        new_region_added = true;
-        break;
-
-      case VIA_REGION_SHAPE.ELLIPSE:
-        var cx = Math.round(region_x0 * _via_canvas_scale);
-        var cy = Math.round(region_y0 * _via_canvas_scale);
-        var rx = Math.round(region_dx * _via_canvas_scale);
-        var ry = Math.round(region_dy * _via_canvas_scale);
-        var theta = 0;
-
-        original_img_region.shape_attributes['name'] = 'ellipse';
-        original_img_region.shape_attributes['cx'] = cx;
-        original_img_region.shape_attributes['cy'] = cy;
-        original_img_region.shape_attributes['rx'] = rx;
-        original_img_region.shape_attributes['ry'] = ry;
-        original_img_region.shape_attributes['theta'] = theta;
-
-        canvas_img_region.shape_attributes['name'] = 'ellipse';
-        canvas_img_region.shape_attributes['cx'] = Math.round( cx / _via_canvas_scale );
-        canvas_img_region.shape_attributes['cy'] = Math.round( cy / _via_canvas_scale );
-        canvas_img_region.shape_attributes['rx'] = Math.round( rx / _via_canvas_scale );
-        canvas_img_region.shape_attributes['ry'] = Math.round( ry / _via_canvas_scale );
-        canvas_img_region.shape_attributes['theta'] = theta;
-
-        new_region_added = true;
-        break;
-
-      case VIA_REGION_SHAPE.POINT:    // handled by case VIA_REGION_SHAPE.POLYGON
-      case VIA_REGION_SHAPE.POLYLINE: // handled by case VIA_REGION_SHAPE.POLYGON
-      case VIA_REGION_SHAPE.POLYGON:
-        // handled by _via_is_user_drawing_polygon
-        break;
-      } // end of switch
-
-      if ( new_region_added ) {
-        var n1 = _via_img_metadata[_via_image_id].regions.push(original_img_region);
-        var n2 = _via_canvas_regions.push(canvas_img_region);
-
-        if ( n1 !== n2 ) {
-          console.log('_via_img_metadata.regions[' + n1 + '] and _via_canvas_regions[' + n2 + '] count mismatch');
-        }
-        var new_region_id = n1 - 1;
-
-        set_region_annotations_to_default_value( new_region_id );
-        select_only_region(new_region_id);
-        if ( _via_annotation_editor_mode === VIA_ANNOTATION_EDITOR_MODE.ALL_REGIONS &&
-             _via_metadata_being_updated === 'region' ) {
-          annotation_editor_add_row( new_region_id );
-          annotation_editor_scroll_to_row( new_region_id );
-          annotation_editor_clear_row_highlight();
-          annotation_editor_highlight_row( new_region_id );
-        }
-        annotation_editor_show();
       }
       _via_redraw_reg_canvas();
       _via_reg_canvas.focus();
-    } else {
-      show_message('Prevented accidental addition of a very small region.');
+      return;
     }
-    return;
+
+    // indicates that user has finished resizing a region
+    if ( _via_is_user_resizing_region ) {
+      // _via_click(x0,y0) to _via_click(x1,y1)
+      _via_is_user_resizing_region = false;
+      _via_reg_canvas.style.cursor = "default";
+
+      // update the region
+      var region_id = _via_region_edge[0];
+      var image_attr = _via_img_metadata[_via_image_id].regions[region_id].shape_attributes;
+      var canvas_attr = _via_canvas_regions[region_id].shape_attributes;
+
+      switch (canvas_attr['name']) {
+      case VIA_REGION_SHAPE.RECT:
+        var d = [canvas_attr['x'], canvas_attr['y'], 0, 0];
+        d[2] = d[0] + canvas_attr['width'];
+        d[3] = d[1] + canvas_attr['height'];
+
+        var mx = _via_current_x;
+        var my = _via_current_y;
+        var preserve_aspect_ratio = false;
+
+        // constrain (mx,my) to lie on a line connecting a diagonal of rectangle
+        if ( _via_is_ctrl_pressed ) {
+          preserve_aspect_ratio = true;
+        }
+
+        rect_update_corner(_via_region_edge[1], d, mx, my, preserve_aspect_ratio);
+        rect_standardize_coordinates(d);
+
+        var w = Math.abs(d[2] - d[0]);
+        var h = Math.abs(d[3] - d[1]);
+
+        image_attr['x'] = Math.round(d[0] * _via_canvas_scale);
+        image_attr['y'] = Math.round(d[1] * _via_canvas_scale);
+        image_attr['width'] = Math.round(w * _via_canvas_scale);
+        image_attr['height'] = Math.round(h * _via_canvas_scale);
+
+        canvas_attr['x'] = Math.round( image_attr['x'] / _via_canvas_scale);
+        canvas_attr['y'] = Math.round( image_attr['y'] / _via_canvas_scale);
+        canvas_attr['width'] = Math.round( image_attr['width'] / _via_canvas_scale);
+        canvas_attr['height'] = Math.round( image_attr['height'] / _via_canvas_scale);
+        break;
+
+      case VIA_REGION_SHAPE.CIRCLE:
+        var dx = Math.abs(canvas_attr['cx'] - _via_current_x);
+        var dy = Math.abs(canvas_attr['cy'] - _via_current_y);
+        var new_r = Math.sqrt( dx*dx + dy*dy );
+
+        image_attr['r'] = fixfloat(new_r * _via_canvas_scale);
+        canvas_attr['r'] = Math.round( image_attr['r'] / _via_canvas_scale);
+        break;
+
+      case VIA_REGION_SHAPE.ELLIPSE:
+        var new_rx = canvas_attr['rx'];
+        var new_ry = canvas_attr['ry'];
+        var new_theta = canvas_attr['theta'];
+        var dx = Math.abs(canvas_attr['cx'] - _via_current_x);
+        var dy = Math.abs(canvas_attr['cy'] - _via_current_y);
+
+        switch(_via_region_edge[1]) {
+        case 5:
+          new_ry = Math.sqrt(dx*dx + dy*dy);
+          new_theta = Math.atan2(- (_via_current_x - canvas_attr['cx']), (_via_current_y - canvas_attr['cy']));
+          break;
+
+        case 6:
+          new_rx = Math.sqrt(dx*dx + dy*dy);
+          new_theta = Math.atan2((_via_current_y - canvas_attr['cy']), (_via_current_x - canvas_attr['cx']));
+          break;
+
+        default:
+          new_rx = dx;
+          new_ry = dy;
+          new_theta = 0;
+          break;
+        }
+
+        image_attr['rx'] = fixfloat(new_rx * _via_canvas_scale);
+        image_attr['ry'] = fixfloat(new_ry * _via_canvas_scale);
+        image_attr['theta'] = fixfloat(new_theta);
+
+        canvas_attr['rx'] = Math.round(image_attr['rx'] / _via_canvas_scale);
+        canvas_attr['ry'] = Math.round(image_attr['ry'] / _via_canvas_scale);
+        canvas_attr['theta'] = fixfloat(new_theta);
+        break;
+
+      case VIA_REGION_SHAPE.POLYLINE: // handled by polygon
+      case VIA_REGION_SHAPE.POLYGON:
+        var moved_vertex_id = _via_region_edge[1] - VIA_POLYGON_RESIZE_VERTEX_OFFSET;
+
+        if ( e.ctrlKey ) {
+          // if on vertex, delete it
+          // if on edge, add a new vertex
+          var r = _via_canvas_regions[_via_user_sel_region_id].shape_attributes;
+          var shape = r.name;
+          var is_on_vertex = is_on_polygon_vertex(r['all_points_x'], r['all_points_y'], _via_current_x, _via_current_y);
+
+          if ( is_on_vertex === _via_region_edge[1] ) {
+            // click on vertex, hence delete vertex
+            if ( _via_polygon_del_vertex(region_id, moved_vertex_id) ) {
+              show_message('Deleted vertex ' + moved_vertex_id + ' from region');
+            }
+          } else {
+            var is_on_edge = is_on_polygon_edge(r['all_points_x'], r['all_points_y'], _via_current_x, _via_current_y);
+            if ( is_on_edge === _via_region_edge[1] ) {
+              // click on edge, hence add new vertex
+              var vertex_index = is_on_edge - VIA_POLYGON_RESIZE_VERTEX_OFFSET;
+              var canvas_x0 = Math.round(_via_click_x1);
+              var canvas_y0 = Math.round(_via_click_y1);
+              var img_x0 = Math.round( canvas_x0 * _via_canvas_scale );
+              var img_y0 = Math.round( canvas_y0 * _via_canvas_scale );
+              canvas_x0 = Math.round( img_x0 / _via_canvas_scale );
+              canvas_y0 = Math.round( img_y0 / _via_canvas_scale );
+
+              _via_canvas_regions[region_id].shape_attributes['all_points_x'].splice(vertex_index+1, 0, canvas_x0);
+              _via_canvas_regions[region_id].shape_attributes['all_points_y'].splice(vertex_index+1, 0, canvas_y0);
+              _via_img_metadata[_via_image_id].regions[region_id].shape_attributes['all_points_x'].splice(vertex_index+1, 0, img_x0);
+              _via_img_metadata[_via_image_id].regions[region_id].shape_attributes['all_points_y'].splice(vertex_index+1, 0, img_y0);
+
+              show_message('Added 1 new vertex to ' + shape + ' region');
+            }
+          }
+        } else {
+          // update coordinate of vertex
+          var imx = Math.round(_via_current_x * _via_canvas_scale);
+          var imy = Math.round(_via_current_y * _via_canvas_scale);
+          image_attr['all_points_x'][moved_vertex_id] = imx;
+          image_attr['all_points_y'][moved_vertex_id] = imy;
+          canvas_attr['all_points_x'][moved_vertex_id] = Math.round( imx / _via_canvas_scale );
+          canvas_attr['all_points_y'][moved_vertex_id] = Math.round( imy / _via_canvas_scale );
+        }
+        break;
+      } // end of switch()
+      _via_redraw_reg_canvas();
+      _via_reg_canvas.focus();
+      return;
+    }
+
+    // denotes a single click (= mouse down + mouse up)
+    if ( click_dx < VIA_MOUSE_CLICK_TOL ||
+         click_dy < VIA_MOUSE_CLICK_TOL ) {
+      // if user is already drawing polygon, then each click adds a new point
+      if ( _via_is_user_drawing_polygon ) {
+        var canvas_x0 = Math.round(_via_click_x1);
+        var canvas_y0 = Math.round(_via_click_y1);
+        var n = _via_canvas_regions[_via_current_polygon_region_id].shape_attributes['all_points_x'].length;
+        var last_x0 = _via_canvas_regions[_via_current_polygon_region_id].shape_attributes['all_points_x'][n-1];
+        var last_y0 = _via_canvas_regions[_via_current_polygon_region_id].shape_attributes['all_points_y'][n-1];
+        // discard if the click was on the last vertex
+        if ( canvas_x0 !== last_x0 || canvas_y0 !== last_y0 ) {
+          // user clicked on a new polygon point
+          _via_canvas_regions[_via_current_polygon_region_id].shape_attributes['all_points_x'].push(canvas_x0);
+          _via_canvas_regions[_via_current_polygon_region_id].shape_attributes['all_points_y'].push(canvas_y0);
+        }
+      } else {
+        var region_id = is_inside_region(_via_click_x0, _via_click_y0);
+        if ( region_id >= 0 ) {
+          // first click selects region
+          _via_user_sel_region_id     = region_id;
+          _via_is_region_selected     = true;
+          _via_is_user_moving_region  = false;
+          _via_is_user_drawing_region = false;
+
+          // de-select all other regions if the user has not pressed Shift
+          if ( !e.shiftKey ) {
+            annotation_editor_clear_row_highlight();
+            toggle_all_regions_selection(false);
+          }
+          set_region_select_state(region_id, true);
+
+          // show annotation editor only when a single region is selected
+          if ( !e.shiftKey ) {
+            annotation_editor_show();
+          } else {
+            annotation_editor_hide();
+          }
+
+          // show the region info
+          if (_via_is_region_info_visible) {
+            var canvas_attr = _via_canvas_regions[region_id].shape_attributes;
+
+            switch (canvas_attr['name']) {
+            case VIA_REGION_SHAPE.RECT:
+              break;
+
+            case VIA_REGION_SHAPE.CIRCLE:
+              var rf = document.getElementById('region_info');
+              var attr = _via_canvas_regions[_via_user_sel_region_id].shape_attributes;
+              rf.innerHTML +=  ',' + ' Radius:' + attr['r'];
+              break;
+
+            case VIA_REGION_SHAPE.ELLIPSE:
+              var rf = document.getElementById('region_info');
+              var attr = _via_canvas_regions[_via_user_sel_region_id].shape_attributes;
+              rf.innerHTML +=  ',' + ' X-radius:' + attr['rx'] + ',' + ' Y-radius:' + attr['ry'];
+              break;
+
+            case VIA_REGION_SHAPE.POLYLINE:
+            case VIA_REGION_SHAPE.POLYGON:
+              break;
+            }
+          }
+
+          show_message('Region selected. If you intended to draw a region, click again inside the selected region to start drawing a region.')
+        } else {
+          if ( _via_is_user_drawing_region ) {
+            // clear all region selection
+            _via_is_user_drawing_region = false;
+            _via_is_region_selected     = false;
+            toggle_all_regions_selection(false);
+            annotation_editor_hide();
+          } else {
+            switch (_via_current_shape) {
+            case VIA_REGION_SHAPE.POLYLINE: // handled by case for POLYGON
+            case VIA_REGION_SHAPE.POLYGON:
+              // user has clicked on the first point in a new polygon
+              // see also event 'mouseup' for _via_is_user_moving_region=true
+              _via_is_user_drawing_polygon = true;
+
+              var canvas_polygon_region = new file_region();
+              canvas_polygon_region.shape_attributes['name'] = _via_current_shape;
+              canvas_polygon_region.shape_attributes['all_points_x'] = [ Math.round(_via_click_x0) ];
+              canvas_polygon_region.shape_attributes['all_points_y'] = [ Math.round(_via_click_y0)] ;
+
+              var new_length = _via_canvas_regions.push(canvas_polygon_region);
+              _via_current_polygon_region_id = new_length - 1;
+              break;
+
+            case VIA_REGION_SHAPE.POINT:
+              // user has marked a landmark point
+              var point_region = new file_region();
+              point_region.shape_attributes['name'] = VIA_REGION_SHAPE.POINT;
+              point_region.shape_attributes['cx'] = Math.round(_via_click_x0 * _via_canvas_scale);
+              point_region.shape_attributes['cy'] = Math.round(_via_click_y0 * _via_canvas_scale);
+              _via_img_metadata[_via_image_id].regions.push(point_region);
+
+              var canvas_point_region = new file_region();
+              canvas_point_region.shape_attributes['name'] = VIA_REGION_SHAPE.POINT;
+              canvas_point_region.shape_attributes['cx'] = Math.round(_via_click_x0);
+              canvas_point_region.shape_attributes['cy'] = Math.round(_via_click_y0);
+              _via_canvas_regions.push(canvas_point_region);
+
+              annotation_editor_update_content();
+              break;
+            }
+          }
+        }
+      }
+      _via_redraw_reg_canvas();
+      _via_reg_canvas.focus();
+      return;
+    }
+
+    // indicates that user has finished drawing a new region
+    if ( _via_is_user_drawing_region ) {
+      _via_is_user_drawing_region = false;
+      var region_x0 = _via_click_x0;
+      var region_y0 = _via_click_y0;
+      var region_x1 = _via_click_x1;
+      var region_y1 = _via_click_y1;
+
+      var original_img_region = new file_region();
+      var canvas_img_region = new file_region();
+      var region_dx = Math.abs(region_x1 - region_x0);
+      var region_dy = Math.abs(region_y1 - region_y0);
+      var new_region_added = false;
+
+      if ( region_dx > VIA_REGION_MIN_DIM && region_dy > VIA_REGION_MIN_DIM ) { // avoid regions with 0 dim
+        switch(_via_current_shape) {
+        case VIA_REGION_SHAPE.RECT:
+          // ensure that (x0,y0) is top-left and (x1,y1) is bottom-right
+          if ( _via_click_x0 < _via_click_x1 ) {
+            region_x0 = _via_click_x0;
+            region_x1 = _via_click_x1;
+          } else {
+            region_x0 = _via_click_x1;
+            region_x1 = _via_click_x0;
+          }
+
+          if ( _via_click_y0 < _via_click_y1 ) {
+            region_y0 = _via_click_y0;
+            region_y1 = _via_click_y1;
+          } else {
+            region_y0 = _via_click_y1;
+            region_y1 = _via_click_y0;
+          }
+
+          var x = Math.round(region_x0 * _via_canvas_scale);
+          var y = Math.round(region_y0 * _via_canvas_scale);
+          var width  = Math.round(region_dx * _via_canvas_scale);
+          var height = Math.round(region_dy * _via_canvas_scale);
+          original_img_region.shape_attributes['name'] = 'rect';
+          original_img_region.shape_attributes['x'] = x;
+          original_img_region.shape_attributes['y'] = y;
+          original_img_region.shape_attributes['width'] = width;
+          original_img_region.shape_attributes['height'] = height;
+
+          canvas_img_region.shape_attributes['name'] = 'rect';
+          canvas_img_region.shape_attributes['x'] = Math.round( x / _via_canvas_scale );
+          canvas_img_region.shape_attributes['y'] = Math.round( y / _via_canvas_scale );
+          canvas_img_region.shape_attributes['width'] = Math.round( width / _via_canvas_scale );
+          canvas_img_region.shape_attributes['height'] = Math.round( height / _via_canvas_scale );
+
+          new_region_added = true;
+          break;
+
+        case VIA_REGION_SHAPE.CIRCLE:
+          var cx = Math.round(region_x0 * _via_canvas_scale);
+          var cy = Math.round(region_y0 * _via_canvas_scale);
+          var r  = Math.round( Math.sqrt(region_dx*region_dx + region_dy*region_dy) * _via_canvas_scale );
+
+          original_img_region.shape_attributes['name'] = 'circle';
+          original_img_region.shape_attributes['cx'] = cx;
+          original_img_region.shape_attributes['cy'] = cy;
+          original_img_region.shape_attributes['r'] = r;
+
+          canvas_img_region.shape_attributes['name'] = 'circle';
+          canvas_img_region.shape_attributes['cx'] = Math.round( cx / _via_canvas_scale );
+          canvas_img_region.shape_attributes['cy'] = Math.round( cy / _via_canvas_scale );
+          canvas_img_region.shape_attributes['r'] = Math.round( r / _via_canvas_scale );
+
+          new_region_added = true;
+          break;
+
+        case VIA_REGION_SHAPE.ELLIPSE:
+          var cx = Math.round(region_x0 * _via_canvas_scale);
+          var cy = Math.round(region_y0 * _via_canvas_scale);
+          var rx = Math.round(region_dx * _via_canvas_scale);
+          var ry = Math.round(region_dy * _via_canvas_scale);
+          var theta = 0;
+
+          original_img_region.shape_attributes['name'] = 'ellipse';
+          original_img_region.shape_attributes['cx'] = cx;
+          original_img_region.shape_attributes['cy'] = cy;
+          original_img_region.shape_attributes['rx'] = rx;
+          original_img_region.shape_attributes['ry'] = ry;
+          original_img_region.shape_attributes['theta'] = theta;
+
+          canvas_img_region.shape_attributes['name'] = 'ellipse';
+          canvas_img_region.shape_attributes['cx'] = Math.round( cx / _via_canvas_scale );
+          canvas_img_region.shape_attributes['cy'] = Math.round( cy / _via_canvas_scale );
+          canvas_img_region.shape_attributes['rx'] = Math.round( rx / _via_canvas_scale );
+          canvas_img_region.shape_attributes['ry'] = Math.round( ry / _via_canvas_scale );
+          canvas_img_region.shape_attributes['theta'] = theta;
+
+          new_region_added = true;
+          break;
+
+        case VIA_REGION_SHAPE.POINT:    // handled by case VIA_REGION_SHAPE.POLYGON
+        case VIA_REGION_SHAPE.POLYLINE: // handled by case VIA_REGION_SHAPE.POLYGON
+        case VIA_REGION_SHAPE.POLYGON:
+          // handled by _via_is_user_drawing_polygon
+          break;
+        } // end of switch
+
+        if ( new_region_added ) {
+          var n1 = _via_img_metadata[_via_image_id].regions.push(original_img_region);
+          var n2 = _via_canvas_regions.push(canvas_img_region);
+
+          if ( n1 !== n2 ) {
+            console.log('_via_img_metadata.regions[' + n1 + '] and _via_canvas_regions[' + n2 + '] count mismatch');
+          }
+          var new_region_id = n1 - 1;
+
+          set_region_annotations_to_default_value( new_region_id );
+          select_only_region(new_region_id);
+          if ( _via_annotation_editor_mode === VIA_ANNOTATION_EDITOR_MODE.ALL_REGIONS &&
+               _via_metadata_being_updated === 'region' ) {
+            annotation_editor_add_row( new_region_id );
+            annotation_editor_scroll_to_row( new_region_id );
+            annotation_editor_clear_row_highlight();
+            annotation_editor_highlight_row( new_region_id );
+          }
+          annotation_editor_show();
+        }
+        _via_redraw_reg_canvas();
+        _via_reg_canvas.focus();
+      } else {
+        show_message('Prevented accidental addition of a very small region.');
+      }
+      return;
+    }
   }
 }
 

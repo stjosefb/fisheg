@@ -1,4 +1,6 @@
 <script src="/static/js/jquery-3.4.1.min.js"></script>
+<script src="/static/js/wheelzoom.js"></script>
+<script src="/static/js/wheelzoom_canvas.js"></script>
 
 <div style="padding: 1 0 1 10">
 
@@ -104,6 +106,8 @@ $( document ).ready(function() {
     {% if not is_ref_dataset %}
         $('#btnScore').hide();
     {% endif %}
+
+    {% include "annotate/zoom.js" %}
 });
 
 {% if method == 'default' %}
@@ -114,5 +118,6 @@ $( document ).ready(function() {
     {% include "annotate/freelabel_script.js" %}
     {% include "annotate/default_script.js" %}
 {% endif %}
+
 
 </script>

@@ -12,9 +12,9 @@
     <div id="image_panel" class="display_area_content display_none">
         {# <img src="{{ image }}">  #}
         {# <img src="{{ image_url }}"> #}
-        <canvas id="region_canvas" width="1" height="1" tabindex="1">Sorry, your browser does not support HTML5 Canvas functionality which is required for this application.</canvas>
+        <canvas id="region_canvas" width="1" height="1" tabindex="1" oncontextmenu="return false;">Sorry, your browser does not support HTML5 Canvas functionality which is required for this application.</canvas>
         {% if method == 'imagemask' %}
-        <img id="maskImg" style="position: absolute; top: 0px; left: 0px; visibility: visible; opacity: 0.5;" src="#">
+        <img id="maskImg" style="position: absolute; top: 0px; left: 0px; visibility: visible; opacity: 0.5;" src="#" oncontextmenu="return false;">
         {% endif %}
     </div>
 </div>

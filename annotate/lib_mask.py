@@ -246,8 +246,9 @@ def _get_polygons_from_mask(mask):
         poly = Polygon(contour)
         poly = poly.simplify(1.0, preserve_topology=False)
         polygons.append(poly)
-        segmentation = np.array(poly.exterior.coords).ravel().tolist()
-        segmentations.append(segmentation)
+        if hasattr(poly,'exterior'):
+            segmentation = np.array(poly.exterior.coords).ravel().tolist()
+            segmentations.append(segmentation)
 
     return segmentations
 

@@ -292,6 +292,9 @@ window.wheelzoomcanvas = (function(){
 			} else {
 				updateBgStyle(deltaY);
 			}
+      
+      //const mouseoverEvent = new Event('mouseover');
+      //cnvs.dispatchEvent(mouseoverEvent);      
 		}
     
 		function onwheel(e) {
@@ -313,7 +316,9 @@ window.wheelzoomcanvas = (function(){
 				cnvs.doZoomOut(true);
         clearCanvas();
         strokeRect();
-			}
+			}    
+      const mouseoverEvent = new Event('mouseover');
+      cnvs.dispatchEvent(mouseoverEvent);            
 		}
     
 		cnvs.doDrag = function (x, y) {
@@ -345,6 +350,8 @@ window.wheelzoomcanvas = (function(){
 			previousEvent = e;
 			updateBgStyle(0);
       //console.log('end drag');
+      const mouseoverEvent = new Event('mouseover');
+      cnvs.dispatchEvent(mouseoverEvent);       
 		}
 
 		function removeDrag() {
@@ -360,7 +367,7 @@ window.wheelzoomcanvas = (function(){
 		// Make the background draggable
 		function draggable(e) {
       //console.log(e.button);
-      //if (e.button == 2) {
+      if (e.button == 2) {
         triggerEvent(cnvs, 'wheelzoom.dragstart');
 
         e.preventDefault();
@@ -368,7 +375,7 @@ window.wheelzoomcanvas = (function(){
         document.addEventListener('mousemove', drag);
         document.addEventListener('mouseup', removeDrag);
         return false;
-      //}
+      }
 		}
     
     function clearCanvas() {
@@ -384,8 +391,8 @@ window.wheelzoomcanvas = (function(){
       context.restore();      
     }
     function strokeRect() {
-      var ctx = cnvs.getContext("2d");
-      ctx.strokeRect(100, 100, 25, 15);      
+      //var ctx = cnvs.getContext("2d");
+      //ctx.strokeRect(100, 100, 25, 15);      
     }
 		function load() {
       //console.log('load');
