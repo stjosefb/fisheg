@@ -89,9 +89,8 @@ $( document ).ready(function() {
                   //$('#score').text(data.score + ' ' + data.score_3);
                   $('#score').text(data.score.toFixed(4));
                   $('#scores').val(data.score + ';' + data.score_3);
-                  $('#ts_diff').val(data.ts_diff);                  
+                  $('#ts_diff').val(data.ts_diff);
                   $('#img_result').insertAfter('#bim0');
-                  //$('#img_result').css('opacity', '0.5');
                   //alert(data.ts_diff);
                   //$('#save_msg').text('Saved');
                   //setTimeout(hideSavedMsg, 1000);
