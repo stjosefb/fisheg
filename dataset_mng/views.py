@@ -3,13 +3,16 @@ from django.shortcuts import render
 # Create your views here.
 
 
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, FileResponse
 from django.template import loader
+from django.core import serializers
 import json
 import os
 import shutil
 from fisheg import settings
 import time
+
+import dataset_mng.lib_mscoco as lib_mscoco
 
 
 def index(request):
@@ -161,3 +164,20 @@ def remove_dataset(request):
         message = 'Successful'
         #print("Successfully created the directory %s " % path)
     return HttpResponseRedirect('.'+'?message='+message)
+
+
+def export_mscoco(request):
+    dataset = request.GET['dataset']
+    #filename = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.FILENAME_DATASET_INFO])
+    #response = FileResponse(open(filename, 'rb'))
+    #return response
+
+    #data = {'a': 'b'}
+    data = lib_mscoco.prepare(dataset, request)
+
+    #json_str = json.dumps(data, indent=2)
+    json_str = json.dumps(data, indent=None, separators=(',', ':'))
+    #json_str = serializers.serialize('json', json_object)
+    response = HttpResponse(json_str, content_type='application/json')
+    response['Content-Disposition'] = 'attachment; filename='+dataset+'.json'
+    return response

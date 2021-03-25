@@ -1,0 +1,67 @@
+{{error}}
+<h1>Class Management: {{ dataset }}</h1>
+
+<div>
+<button onclick="window.location.href = '/dataset_mng/annot_mng?dataset={{ dataset }}';">Back to dataset</button>
+</div>
+<hr/>
+
+<form action="remove_class" id="remove_form" method="post">
+    {% csrf_token %}
+    <input type="hidden" id="dataset" name="dataset" value="{{ dataset }}">
+    <input type="hidden" id="class_id_del" name="class_id">
+    <p>Classes:</p>
+    {% if class_list %}
+        <ul>
+        {% for kelas in class_list %}
+            <li>
+                <a href="javascript:updateKelas('{{ kelas.id }}','{{ kelas.name }}','{{ kelas.color }}')">{{ kelas.name }}</a>
+                <button type="button" onclick="removeKelas('{{ kelas.id }}')">Remove</button>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No elements in list.</p>
+    {% endif %}
+</form>
+
+<form action="update_class" id="update_form" method="post" style="display: none">
+    {% csrf_token %}
+    <input type="hidden" name="dataset" value="{{ dataset }}">
+    <input type="hidden" id="class_id_upd" name="class_id" value="">
+    Name:<input type="text" id="class_name_upd" name="class_name"><br/>
+    <!--Color:--><input type="text" id="class_color_upd" name="class_color" style="display:none"><!--<br/>-->
+    <button type="submit">Modify class</button>
+    <button type="button" onclick="cancelUpdate()">Cancel</button>
+</form>
+
+<form action="create_class" id="create_form" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="dataset" value="{{ dataset }}">
+    Name:<input type="text" name="class_name"><br/>
+    <!--Color:--><input type="text" name="class_color" style="display:none"><!--<br/>-->
+    <button type="submit">Create class</button>
+</form>
+<p><em>{{ message }}</em></p>
+<script>
+    function removeKelas(kelas) {
+        if (confirm('Hapus kelas?')) {
+            document.getElementById("class_id_del").value = kelas;
+            document.getElementById("remove_form").submit();
+        }
+    }
+    function updateKelas(idKelas,namaKelas,warnaKelas) {
+        document.getElementById('create_form').style.display = 'none';
+        document.getElementById('update_form').style.display = 'block';
+        document.getElementById("class_id_upd").value = idKelas;
+        document.getElementById("class_name_upd").value = namaKelas;
+        document.getElementById("class_color_upd").value = warnaKelas;
+    }
+    function cancelUpdate() {
+        document.getElementById('create_form').style.display = 'block';
+        document.getElementById('update_form').style.display = 'none';
+        document.getElementById("class_id_upd").value = '';
+        document.getElementById("class_name_upd").value = '';
+        document.getElementById("class_color_upd").value = '';
+    }
+</script>

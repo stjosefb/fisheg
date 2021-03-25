@@ -31,30 +31,30 @@ $( document ).ready(function() {
                     arr_trace_elmt.push(obj.annotations[i].segmentation[j]);
                     arr_trace_elmt.push(obj.annotations[i].segmentation[j+1]);
                     arr_trace_elmt.push(width); // size
-                    if (obj.annotations[i].category_id == 3) {
-                        arr_trace_elmt.push(1); // as background
-                    } else {
+                    //if (obj.annotations[i].category_id == 3) {
+                    //    arr_trace_elmt.push(1); // as background
+                    //} else {
                         arr_trace_elmt.push(obj.annotations[i].category_id); // category (color)
-                    }
+                    //}
                 }
                 if ((obj.annotations[i].shape == 'rect') || (obj.annotations[i].shape == 'polygon')) {
                     arr_trace_elmt.push(obj.annotations[i].segmentation[0]);
                     arr_trace_elmt.push(obj.annotations[i].segmentation[1]);
                     arr_trace_elmt.push(width); // size
-                    if (obj.annotations[i].category_id == 3) {
-                        arr_trace_elmt.push(1); // as background
-                    } else {
+                    //if (obj.annotations[i].category_id == 3) {
+                    //    arr_trace_elmt.push(1); // as background
+                    //} else {
                         arr_trace_elmt.push(obj.annotations[i].category_id); // category (color)
-                    }
+                    //}
                 }
                 trace = arr_trace_elmt.join();
                 //trace = obj.annotations[i].segmentation.join();
-                if (obj.annotations[i].category_id != 4) {
+                //if (obj.annotations[i].category_id != 4) {
                     list_traces.push(trace);
-                }
-                if (obj.annotations[i].category_id == 3) {
+                //}
+                /*if (obj.annotations[i].category_id == 3) {
                     $('input[name="border"]').val(trace);
-                }
+                }*/
             }
             //console.log(list_traces);
 
@@ -86,7 +86,8 @@ $( document ).ready(function() {
                   $('#img_result_2').show();
                   $('#polygon_segmentations').val(JSON.stringify(data.polygon_segmentations));
                   $('#base64_img_mask').val(data.image_base64_freelabel);
-                  $('#score').text(data.score + ' ' + data.score_3);
+                  //$('#score').text(data.score + ' ' + data.score_3);
+                  $('#score').text(data.score.toFixed(4));
                   $('#scores').val(data.score + ';' + data.score_3);
                   $('#ts_diff').val(data.ts_diff);
                   $('#img_result').insertAfter('#bim0');
