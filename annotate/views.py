@@ -339,7 +339,7 @@ def grow_refine_traces(request):
         'border': border
     }
     if refine_type == 'refine_crop':
-        payload['base64'] = 1
+        payload['base64'] = '1'
     img_sizes = request.POST.getlist('img_size[]')
     #for img_size in img_sizes:
     payload['img_size[]'] = [img_sizes[1],img_sizes[0]]
