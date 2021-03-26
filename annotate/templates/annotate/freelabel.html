@@ -15,6 +15,7 @@
     <input type="hidden" value="{{data_id}}" name="data_id">
     <input type="hidden" value="{{dataset}}" name="dataset">
 
+
     <input type="hidden" value="{{ image_url }}" name="img">
     {% if is_ref_dataset %}
         <input type="hidden" value="{{dataset}}-{{ref_dataset}}-{{data_id}}" name="ID">
@@ -31,6 +32,10 @@
     <input type="hidden" value="" name="border">
     {# <input type="hidden" name="trace[]"> #}
     <button>Grow traces</button>
+    <select name="refine_type" id="refine_type">
+        <option value="refine2" selected>Mask</option>
+        <option value="refine_crop" selected>Crop</option>
+    </select>
 </form>
 
 <div style="display: none">
@@ -50,6 +55,8 @@
 <div id="right_area" style="float: right; width: 50%;">
     {# <img id="img_result"> #}
     <img id="img_result_2">
+    <img id="img_result_3">
+    <img id="img_result_4">
 </div>
 
 <script>

@@ -9,6 +9,8 @@ $( document ).ready(function() {
 
         $('#img_result').hide();
         $('#img_result_2').hide();
+        $('#img_result_3').hide();
+        $('#img_result_4').hide();
 
         pack_via_metadata('coco').then( function(data) {
             width = 2;
@@ -83,7 +85,17 @@ $( document ).ready(function() {
                   $('#img_result').attr("src",data.image_base64_freelabel);
                   $('#img_result_2').attr("src",data.image_base64_ref);
                   $('#img_result').show();
-                  $('#img_result_2').show();
+                  if ($( "#refine_type" ).val() != 'refine_crop') {
+                    $('#img_result_2').show();
+                  }
+
+                  if ($( "#refine_type" ).val() == 'refine_crop') {
+                      $('#img_result_3').attr("src",data.image_base64_3);
+                      $('#img_result_4').attr("src",data.image_base64_4);
+                      $('#img_result_3').show();
+                      $('#img_result_4').show();
+                  }
+
                   $('#polygon_segmentations').val(JSON.stringify(data.polygon_segmentations));
                   $('#base64_img_mask').val(data.image_base64_freelabel);
                   //$('#score').text(data.score + ' ' + data.score_3);
