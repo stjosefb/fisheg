@@ -394,6 +394,7 @@ def grow_refine_traces(request):
             img_2_base64 = output['imgbase64']
             img_3_base64 = output['img_fg']
             img_4_base64 = output['img_bg']
+            ts_diff = output['time']
             score_jaccard = 0
             score_dice = 0
         else:

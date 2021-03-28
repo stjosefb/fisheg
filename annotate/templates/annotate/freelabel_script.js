@@ -102,6 +102,9 @@ $( document ).ready(function() {
                   $('#score').text(data.score.toFixed(4));
                   $('#scores').val(data.score + ';' + data.score_3);
                   $('#ts_diff').val(data.ts_diff);
+                  if ($( "#refine_type" ).val() == 'refine_crop') {
+                    $('#ts_diff2').val(data.ts_diff);
+                  }
                   $('#img_result').insertAfter('#bim0');
                   //alert(data.ts_diff);
                   //$('#save_msg').text('Saved');
