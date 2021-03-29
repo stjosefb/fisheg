@@ -397,10 +397,9 @@ def grow_refine_traces(request):
 
             base64_img_parts = img_1_base64.split(',', 1)
             img_content = base64.decodebytes(base64_img_parts[1].encode('ascii'))
-
-            score_jaccard, score_dice, img_mask_1, img_mask_2 = lib_mask.score_against_ref_by_img_content(image_info_file, polygon_annot_file, img_content)
         else:
-            score_jaccard, score_dice, img_mask_1, img_mask_2 = lib_mask.score_against_ref_by_img_content(image_info_file, polygon_annot_file, r.content)
+            img_content = r.content
+        score_jaccard, score_dice, img_mask_1, img_mask_2 = lib_mask.score_against_ref_by_img_content(image_info_file, polygon_annot_file, img_content)
     else:
         if refine_type == 'refine_crop':
             output = json.loads(r.content)
@@ -436,7 +435,7 @@ def grow_refine_traces(request):
 
     # image mask to polygons
     if is_ref_dataset == '1':
-        segmentation = lib_mask.get_polygons_from_img_mask(r.content, type="content")
+        segmentation = lib_mask.get_polygons_from_img_mask(img_content, type="content")
     #print(segmentation)
     else:
         segmentation = []
