@@ -395,7 +395,10 @@ def grow_refine_traces(request):
             img_4_base64 = output['img_bg']
             ts_diff = output['time']
 
-            score_jaccard, score_dice, img_mask_1, img_mask_2 = lib_mask.score_against_ref_by_img_content(image_info_file, polygon_annot_file, img_1_base64)
+            base64_img_parts = img_1_base64.split(',', 1)
+            img_content = base64.decodebytes(base64_img_parts[1].encode('ascii'))
+
+            score_jaccard, score_dice, img_mask_1, img_mask_2 = lib_mask.score_against_ref_by_img_content(image_info_file, polygon_annot_file, img_content)
         else:
             score_jaccard, score_dice, img_mask_1, img_mask_2 = lib_mask.score_against_ref_by_img_content(image_info_file, polygon_annot_file, r.content)
     else:
