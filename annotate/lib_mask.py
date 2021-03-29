@@ -108,6 +108,7 @@ def img_content_change_mask_color_from_black(img_content):
     #img_base64_new = '#'
     return im_new_bytes
 
+
 def score_against_ref_by_img_content(image_info_file, base_annot_file, img_content):
     score_jaccard = 0
     score_dice = 0
@@ -127,7 +128,7 @@ def score_against_ref_by_img_content(image_info_file, base_annot_file, img_conte
             image_info = json.load(f)
             img_file = image_info['image']
 
-        #img_content = img_content_change_mask_color_from_black(img_content)
+        # img_content = img_content_change_mask_color_from_black(img_content)
         if annot_obj['method'] == 'imagemask':
             encoded_elmts_img_reg = annot_src.split(',', 1)
             img_content_ref = base64.decodebytes(encoded_elmts_img_reg[1].encode('ascii'))

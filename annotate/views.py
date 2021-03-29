@@ -386,7 +386,18 @@ def grow_refine_traces(request):
                                     data_id + '.json'])
         polygon_annot_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS,
                                        data_id + '.json'])
-        score_jaccard, score_dice, img_mask_1, img_mask_2 = lib_mask.score_against_ref_by_img_content(image_info_file, polygon_annot_file, r.content)
+
+        if refine_type == 'refine_crop':
+            output = json.loads(r.content)
+            img_1_base64 = output['imgbase64']
+            img_2_base64 = output['imgbase64']
+            img_3_base64 = output['img_fg']
+            img_4_base64 = output['img_bg']
+            ts_diff = output['time']
+
+            score_jaccard, score_dice, img_mask_1, img_mask_2 = lib_mask.score_against_ref_by_img_content(image_info_file, polygon_annot_file, img_1_base64)
+        else:
+            score_jaccard, score_dice, img_mask_1, img_mask_2 = lib_mask.score_against_ref_by_img_content(image_info_file, polygon_annot_file, r.content)
     else:
         if refine_type == 'refine_crop':
             output = json.loads(r.content)
