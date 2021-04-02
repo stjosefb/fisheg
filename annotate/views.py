@@ -336,7 +336,9 @@ def grow_refine_traces(request):
         'ID': request.POST['ID'],
         'weight': request.POST['weight'],
         'm': request.POST['m'],
-        'border': border
+        'border': border,
+        'singleprocess': request.POST['singleprocess'],
+        'ignorebeyondboundary': request.POST['ignorebeyondboundary']
     }
     if refine_type == 'refine_crop':
         payload['base64'] = '1'
@@ -349,7 +351,8 @@ def grow_refine_traces(request):
 
     # request
     #url = 'http://localhost:9000/freelabel/refine2/'
-    url = 'http://142.93.169.91:9000/freelabel/'+refine_type+'/'
+    #url = 'http://142.93.169.91:9000/freelabel/'+refine_type+'/'
+    url = 'http://localhost:9000/freelabel/' + refine_type + '/'
     ts_1 = time.time()
     r = requests.post(url, data=payload)
     ts_2 = time.time()
