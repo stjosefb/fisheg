@@ -324,6 +324,7 @@ def check_score(request):
 # freelabel
 def grow_refine_traces(request):
     # input params
+    refine_type = request.POST['refine_type']
     dataset = request.POST['dataset']
     data_id = request.POST['data_id']
     is_ref_dataset = request.POST['is_ref_dataset']
@@ -335,8 +336,12 @@ def grow_refine_traces(request):
         'ID': request.POST['ID'],
         'weight': request.POST['weight'],
         'm': request.POST['m'],
-        'border': border
+        'border': border,
+        'singleprocess': request.POST['singleprocess'],
+        'ignorebeyondboundary': request.POST['ignorebeyondboundary']
     }
+    if refine_type == 'refine_crop':
+        payload['base64'] = '1'
     img_sizes = request.POST.getlist('img_size[]')
     #for img_size in img_sizes:
     payload['img_size[]'] = [img_sizes[1],img_sizes[0]]
@@ -346,7 +351,8 @@ def grow_refine_traces(request):
 
     # request
     #url = 'http://localhost:9000/freelabel/refine2/'
-    url = 'http://142.93.169.91:9000/freelabel/refine2/'
+    #url = 'http://142.93.169.91:9000/freelabel/'+refine_type+'/'
+    url = 'http://localhost:9000/freelabel/' + refine_type + '/'
     ts_1 = time.time()
     r = requests.post(url, data=payload)
     ts_2 = time.time()
@@ -383,27 +389,56 @@ def grow_refine_traces(request):
                                     data_id + '.json'])
         polygon_annot_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS,
                                        data_id + '.json'])
-        score_jaccard, score_dice, img_mask_1, img_mask_2 = lib_mask.score_against_ref_by_img_content(image_info_file, polygon_annot_file, r.content)
+
+        if refine_type == 'refine_crop':
+            output = json.loads(r.content)
+            img_1_base64 = output['imgbase64']
+            img_2_base64 = output['imgbase64']
+            img_3_base64 = output['img_fg']
+            img_4_base64 = output['img_bg']
+            ts_diff = output['time']
+
+            base64_img_parts = img_1_base64.split(',', 1)
+            img_content = base64.decodebytes(base64_img_parts[1].encode('ascii'))
+        else:
+            img_content = r.content
+        score_jaccard, score_dice, img_mask_1, img_mask_2 = lib_mask.score_against_ref_by_img_content(image_info_file, polygon_annot_file, img_content)
     else:
-        #img_mask_2 = lib_mask.binary_(r.content)
-        img_mask_2 = r.content
-        img_mask_1 = img_mask_2
-        score_jaccard = 0
-        score_dice = 0
+        if refine_type == 'refine_crop':
+            output = json.loads(r.content)
+            img_1_base64 = output['imgbase64']
+            img_2_base64 = output['imgbase64']
+            img_3_base64 = output['img_fg']
+            img_4_base64 = output['img_bg']
+            ts_diff = output['time']
+            score_jaccard = 0
+            score_dice = 0
+        else:
+            #img_mask_2 = lib_mask.binary_(r.content)
+            img_mask_2 = r.content
+            img_mask_1 = img_mask_2
+            score_jaccard = 0
+            score_dice = 0
 
-    # image mask: freelabel
-    uri_img_mask_freelabel = ("data:" +
-           r.headers['Content-Type'] + ";" +
-           "base64," + base64.b64encode(img_mask_2).decode('ascii'))
+    if refine_type == 'refine_crop':
+        uri_img_mask_freelabel = img_1_base64
+        uri_img_mask_ref = img_2_base64
+        uri_img_3 = img_3_base64
+        uri_img_4 = img_4_base64
+    else:
+        # image mask: freelabel
+        uri_img_mask_freelabel = ("data:" +
+                                  r.headers['Content-Type'] + ";" +
+                                  "base64," + base64.b64encode(img_mask_2).decode('ascii'))
 
-    # image mask: reference
-    uri_img_mask_ref = ("data:" +
-           "image/png" + ";" +
-           "base64," + base64.b64encode(img_mask_1).decode('ascii'))
+        # image mask: reference
+        uri_img_mask_ref = ("data:" +
+                            "image/png" + ";" +
+                            "base64," + base64.b64encode(img_mask_1).decode('ascii'))
 
     # image mask to polygons
     if is_ref_dataset == '1':
-        segmentation = lib_mask.get_polygons_from_img_mask(r.content, type="content")
+        segmentation = lib_mask.get_polygons_from_img_mask(img_content, type="content")
     #print(segmentation)
     else:
         segmentation = []
@@ -420,4 +455,7 @@ def grow_refine_traces(request):
         "polygon_segmentations": segmentation,
         "ts_diff": ts_diff
     }
+    if refine_type == 'refine_crop':
+        response['image_base64_3'] = uri_img_3
+        response['image_base64_4'] = uri_img_4
     return JsonResponse(response)

@@ -164,6 +164,15 @@ d:
 cd D:\Works\freelabel_edit
 D:\Users\Jos\.virtualenv\freelabel\Scripts\activate.bat
 python manage.py runserver 0.0.0.0:9000
+---
+run ubuntu wsl
+cd /home/josef/anntools/freelabel_edit
+source ./bin/activate
+python manage.py runserver 0.0.0.0:9000
+
+cd /home/josef/anntools/freelabel_rev
+source /home/josef/anntools/freelabel_edit/bin/activate
+python manage.py runserver 0.0.0.0:9000
 
 ---
 alt?
