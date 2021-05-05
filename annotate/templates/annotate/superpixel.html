@@ -18,8 +18,10 @@
     <input type="hidden" value="{{ image_url }}" name="img">
     {% if is_ref_dataset %}
         <input type="hidden" value="{{dataset}}-{{ref_dataset}}-{{data_id}}" name="ID">
+        <input type="hidden" value="1" name="is_ref_dataset">
     {% else %}
         <input type="hidden" value="{{dataset}}--{{data_id}}" name="ID">
+        <input type="hidden" value="0" name="is_ref_dataset">
     {% endif %}
 
     <input type="hidden" value="{{image_width}}" name="img_size[]">
@@ -29,6 +31,19 @@
     <input type="hidden" value="" name="border">
     {# <input type="hidden" name="trace[]"> #}
     <button>Grow traces</button>
+    <select name="refine_type" id="refine_type">
+        <option value="refine_by_superpixel">Mask</option>
+        <option value="refine_crop_by_superpixel">Crop</option>
+    </select>
+    <select name="singleprocess" id="singleprocess">
+        <option value="0">False</option>
+        <option value="1">True</option>
+    </select>
+    <select name="ignorebeyondboundary" id="ignorebeyondboundary">
+        <option value="0">False</option>
+        <option value="1">True</option>
+    </select>
+    <input type="text" value="" id="ts_diff2">
 </form>
 
 <div style="display: none">
@@ -48,6 +63,8 @@
 <div id="right_area" style="float: right; width: 50%;">
     {# <img id="img_result"> #}
     <img id="img_result_2">
+    <img id="img_result_3">
+    <img id="img_result_4">
 </div>
 
 <script>
@@ -74,12 +91,16 @@ $( document ).ready(function() {
     document.getElementById('user_input_attribute_id').value = 'class';
     add_new_attribute_from_user_input();
     $('#attribute_type').val('radio').trigger('change');
-    $('#_via_attribute_new_option_id').val('background').trigger('change');
-    $('#_via_attribute_new_option_id').val('fish').trigger('change');
-    $('#_via_attribute_new_option_id').val('background_border').trigger('change');
-    $('#_via_attribute_new_option_id').val('ignore').trigger('change');
+    {% for cls in list_classes %}
+    $('#_via_attribute_new_option_id').val('{{ cls.name }}').trigger('change');
+    {% endfor %}
+    //$('#_via_attribute_new_option_id').val('background').trigger('change');
+    //$('#_via_attribute_new_option_id').val('fish').trigger('change');
+    //$('#_via_attribute_new_option_id').val('background_border').trigger('change');
+    //$('#_via_attribute_new_option_id').val('ignore').trigger('change');
 
-    $("#_via_attribute_option_default_fish").prop("checked", true).trigger("change");
+    $("#_via_attribute_option_default_background").prop("checked", true).trigger("change");
+    //$("#_via_attribute_option_default_fish").prop("checked", true).trigger("change");
 
     //
     var d = {};

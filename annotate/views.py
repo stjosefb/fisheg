@@ -73,7 +73,7 @@ def index(request, list_seg_in=None, method='GET', data={}):
                         annot_method = 'default'
                 if annot_method == 'default':
                     polygon_annot = annot[annot_method]
-                elif annot_method == 'freelabel':
+                elif annot_method == 'freelabel' or annot_method == 'superpixel':
                     if annot_method in annot:
                         polygon_annot = annot[annot_method]['shapes']
                     else:
@@ -340,7 +340,7 @@ def grow_refine_traces(request):
         'singleprocess': request.POST['singleprocess'],
         'ignorebeyondboundary': request.POST['ignorebeyondboundary']
     }
-    if refine_type == 'refine_crop':
+    if refine_type == 'refine_crop' or refine_type == 'refine_crop_by_superpixel':
         payload['base64'] = '1'
     img_sizes = request.POST.getlist('img_size[]')
     #for img_size in img_sizes:
@@ -390,7 +390,7 @@ def grow_refine_traces(request):
         polygon_annot_file = '/'.join([settings.BASE_DATASETS_PATH, dataset, settings.DIR_DATASETS_ANNOTATIONS,
                                        data_id + '.json'])
 
-        if refine_type == 'refine_crop':
+        if refine_type == 'refine_crop' or refine_type == 'refine_crop_by_superpixel':
             output = json.loads(r.content)
             img_1_base64 = output['imgbase64']
             img_2_base64 = output['imgbase64']
@@ -404,7 +404,7 @@ def grow_refine_traces(request):
             img_content = r.content
         score_jaccard, score_dice, img_mask_1, img_mask_2 = lib_mask.score_against_ref_by_img_content(image_info_file, polygon_annot_file, img_content)
     else:
-        if refine_type == 'refine_crop':
+        if refine_type == 'refine_crop' or refine_type == 'refine_crop_by_superpixel':
             output = json.loads(r.content)
             img_1_base64 = output['imgbase64']
             img_2_base64 = output['imgbase64']
@@ -420,7 +420,7 @@ def grow_refine_traces(request):
             score_jaccard = 0
             score_dice = 0
 
-    if refine_type == 'refine_crop':
+    if refine_type == 'refine_crop' or refine_type == 'refine_crop_by_superpixel':
         uri_img_mask_freelabel = img_1_base64
         uri_img_mask_ref = img_2_base64
         uri_img_3 = img_3_base64
@@ -455,7 +455,7 @@ def grow_refine_traces(request):
         "polygon_segmentations": segmentation,
         "ts_diff": ts_diff
     }
-    if refine_type == 'refine_crop':
+    if refine_type == 'refine_crop' or refine_type == 'refine_crop_by_superpixel':
         response['image_base64_3'] = uri_img_3
         response['image_base64_4'] = uri_img_4
     return JsonResponse(response)
