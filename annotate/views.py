@@ -89,7 +89,7 @@ def index(request, list_seg_in=None, method='GET', data={}):
                     list_y = [str(y) for y in region[1::2]]
                     str_list_x = ','.join(list_x)
                     str_list_y = ','.join(list_y)
-                    if annot_method == 'freelabel':
+                    if annot_method == 'freelabel' or annot_method == 'superpixel':
                         if 'trace_types' in annot[annot_method]:
                             shape = annot[annot_method]['trace_types'][key]
                         else:
@@ -182,7 +182,7 @@ def save(request):
 
             if annot_method == 'default':
                 data[annot_method] = list_seg
-            elif annot_method == 'freelabel':
+            elif (annot_method == 'freelabel') or (annot_method == 'superpixel'):
                 data['default'] = json.loads(polygon_segmentations)
                 data['imagemask'] = base64_img_mask
                 data[annot_method] = {
