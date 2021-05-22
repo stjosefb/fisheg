@@ -1,4 +1,18 @@
+function initAnnsSuperpixel() {
+    var url = 'init_anns_superpixel';
+    $.ajax({
+        type: "POST",
+        url: url,
+        data: form.serialize(), // serializes the form's elements.
+        success: function(data)
+        {
+          console.log(data);
+        }
+    });
+}
+
 $( document ).ready(function() {
+    initAnnsSuperpixel();
     $("#btnScore").attr('disabled', true);
     $("#form_traces").submit(function(e) {
 

@@ -321,6 +321,35 @@ def check_score(request):
     return JsonResponse(response)
 
 
+def init_anns_superpixel(request):
+    # input params
+    #dataset = request.POST['dataset']
+    #data_id = request.POST['data_id']
+    #is_ref_dataset = request.POST['is_ref_dataset']
+
+    # payload
+    payload = {
+        'img': request.POST['img'],
+        'ID': request.POST['ID'],
+    }
+
+    # post
+    url = 'http://localhost:9000/freelabel/' + 'init_refine_by_superpixel' + '/'
+    r = requests.post(url, data=payload)
+
+    # process
+    output = json.loads(r.content)
+    ts_diff = output['time']
+
+    # response
+    response = {
+        "success": True,
+        "ts_diff": ts_diff
+    }
+
+    return JsonResponse(response)
+
+
 # freelabel
 def grow_refine_traces(request):
     # input params
