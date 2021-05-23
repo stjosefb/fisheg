@@ -1,5 +1,7 @@
 function initAnnsSuperpixel() {
+    //console.log('init_anns_superpixel');
     var url = 'init_anns_superpixel';
+    var form = $("#form_traces");
     $.ajax({
         type: "POST",
         url: url,
@@ -7,6 +9,7 @@ function initAnnsSuperpixel() {
         success: function(data)
         {
           console.log(data);
+          $('#btnGrowTraces').removeAttr('disabled');
         }
     });
 }
